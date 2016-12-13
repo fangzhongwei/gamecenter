@@ -110,7 +110,11 @@ class TCPHandler extends Actor with ActorLogging {
           case Some(array) =>
             log.info(s"DataContent length is ${array.length}")
             currentReadStep = ReadStep.get(readStep.getNextCode)
-            handData(array)
+            try {
+              handData(array)
+            } catch {
+              case ex: Exception => log.error(ex, ex.getMessage)
+            }
             bufferBytes.length > 0 match {
               case true => handle(currentReadStep)
               case false =>
@@ -141,7 +145,7 @@ class TCPHandler extends Actor with ActorLogging {
     }
   }
 
-  def readDataContent(length:Int): (Option[Array[Byte]]) = readBytes(ReadStep.DataContent, length)
+  def readDataContent(length: Int): (Option[Array[Byte]]) = readBytes(ReadStep.DataContent, length)
 
   def readBytes(step: ReadStep, length: Int = 0): Option[Array[Byte]] = {
     val readHeaderLength: Int = {
