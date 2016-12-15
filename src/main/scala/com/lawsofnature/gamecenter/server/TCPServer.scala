@@ -1,12 +1,15 @@
 package com.lawsofnature.gamecenter.server
 
 import java.net.InetSocketAddress
+import java.util
 
 import akka.actor._
 import akka.io.{IO, Tcp}
+import akka.util.CompactByteString
 import com.lawsofnature.common.edecrypt.DESUtils
 import com.lawsofnature.common.helper.{ByteHelper, GZipHelper}
 import com.lawsofnature.gamecenter.enumnate.{ReadStep, SocketActionType}
+import com.lawsofnature.gamecenter.helper.SocketDataGenerator
 import com.proto.FirstProtobuf
 import com.proto.FirstProtobuf.TestBuf
 
@@ -62,13 +65,29 @@ class TCPHandler extends Actor with ActorLogging {
     val tb: FirstProtobuf.TestBuf = TestBuf.parseFrom(uncompress)
     System.out.println(tb.getID)
     System.out.println(tb.getUrl)
-    sender() ! "hand data finish."
+
+    val builder: FirstProtobuf.TestBuf.Builder = FirstProtobuf.TestBuf.newBuilder
+
+    builder.setID(198273)
+    builder.setUrl("aaaa加一点utf的中文" * 20)
+
+    val info: FirstProtobuf.TestBuf = builder.build
+    val buf: Array[Byte] = info.toByteArray
+
+    val generate: Array[Byte] = SocketDataGenerator.generate(102, buf, "ABCD1234")
+    println(generate.length)
+    println(util.Arrays.toString(generate))
+    sender() ! Write(CompactByteString(generate))
+    Thread.sleep(10000)
+    sender() ! Write(CompactByteString(generate))
+
   }
 
   def receive = {
     case Received(data) =>
       bufferBytes = ByteHelper.combineTowBytes(bufferBytes, data.toArray)
       handle(currentReadStep)
+//      sender() ! Write(CompactByteString(("server time:" + System.currentTimeMillis()).getBytes))
     case PeerClosed =>
       log.info(s"actor close, $self.")
       context stop self

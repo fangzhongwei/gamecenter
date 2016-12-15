@@ -47,6 +47,8 @@ class TCPClient(remoteAddr: InetSocketAddress, numClients: Int) extends Actor wi
   var sendLength = true
 
   def receive = {
+    case Received(data) =>
+      println(new String(data.toArray))
     case CommandFailed(_: Connect) =>
       log.warning("connect failed")
       context stop self
@@ -111,6 +113,10 @@ class TCPClient(remoteAddr: InetSocketAddress, numClients: Int) extends Actor wi
         self,
         CompactByteString(ByteHelper.combineTowBytes(towBytes, encrypt)))
     //CompactByteString(buf)
+
+    case an: Any =>
+      println(an)
+      log.info(s"receive something $an")
   }
 }
 
