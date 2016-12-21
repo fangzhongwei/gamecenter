@@ -167,7 +167,7 @@ public final class FirstProtobuf {
         output.writeInt32(1, iD_);
       }
       if (!getUrlBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, url_);
+        writeString(output, 2, url_);
       }
     }
 
@@ -181,7 +181,7 @@ public final class FirstProtobuf {
           .computeInt32Size(1, iD_);
       }
       if (!getUrlBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, url_);
+        size += computeStringSize(2, url_);
       }
       memoizedSize = size;
       return size;
@@ -245,40 +245,34 @@ public final class FirstProtobuf {
     }
     public static com.proto.FirstProtobuf.TestBuf parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
+      return parseWithIOException(PARSER, input);
     }
     public static com.proto.FirstProtobuf.TestBuf parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
+      return parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static com.proto.FirstProtobuf.TestBuf parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input);
+      return parseDelimitedWithIOException(PARSER, input);
     }
     public static com.proto.FirstProtobuf.TestBuf parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      return parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static com.proto.FirstProtobuf.TestBuf parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
+      return parseWithIOException(PARSER, input);
     }
     public static com.proto.FirstProtobuf.TestBuf parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
+      return parseWithIOException(PARSER, input, extensionRegistry);
     }
 
     public Builder newBuilderForType() { return newBuilder(); }
@@ -329,8 +323,7 @@ public final class FirstProtobuf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       public Builder clear() {

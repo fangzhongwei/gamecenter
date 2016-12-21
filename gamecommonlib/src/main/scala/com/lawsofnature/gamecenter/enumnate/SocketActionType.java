@@ -4,7 +4,9 @@ package com.lawsofnature.gamecenter.enumnate;
  * Created by fangzhongwei on 2016/12/13.
  */
 public enum SocketActionType {
-    Login(1,"login");
+    Login(1,"login"),
+    Join(2,"join"),
+    PlayCards(3,"play");
 
     private int code;
     private String desc;
