@@ -14,6 +14,7 @@ lazy val commonSettings = Seq(
     "com.rabbitmq" % "amqp-client" % "3.6.5",
     "com.zeroc" % "ice" % "3.6.2",
     "com.typesafe.akka" %% "akka-actor" % "2.4.14",
+    "com.typesafe.akka" %% "akka-remote" % "2.4.14",
     "com.typesafe.akka" %% "akka-cluster" % "2.4.14",
     "com.typesafe.akka" %% "akka-cluster-metrics" % "2.4.14",
     "com.typesafe.akka" %% "akka-cluster-sharding" % "2.4.14",
