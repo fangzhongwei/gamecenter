@@ -7,7 +7,6 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import com.jxjxgo.common.redis.RedisClientTemplate
 import com.jxjxgo.gamecenter.enumnate.GameStatus
 import com.jxjxgo.gamecenter.helper.CardsHelper
-import com.jxjxgo.gamecenter.noti.GameStart
 import com.jxjxgo.gamecenter.repo.{CoordinateRepository, TmGameRow, TmSeatRow}
 import com.jxjxgo.memberber.rpc.domain.{MemberEndpoint, MemberResponse}
 import com.twitter.util.{Await, Future}
@@ -32,7 +31,7 @@ class GameNotifyServiceImpl @Inject()(coordinateRepository: CoordinateRepository
   private[this] val akkaAddressPre = "gc.ddz.mi-addr:"
   private[this] var actor: ActorRef = _
 
-  implicit def gameStatus2Byte(gameStatus: GameStatus): Byte = gameStatus.getCode
+  implicit def gameStatus2Byte(gameStatus: GameStatus): Short = gameStatus.getCode
 
   def notifyGameStart(traceId: String, memberId: Long, game: TmGameRow, gameIndex: Int, cards: List[Int], dzCards: List[Int], previousUsername: String, nextUsername: String): Unit = {
 
@@ -50,7 +49,7 @@ class GameNotifyServiceImpl @Inject()(coordinateRepository: CoordinateRepository
     val cards2: String = player2CardsList.mkString(",")
     val cards3: String = player3CardsList.mkString(",")
     val dzCards: String = dzCardsList.mkString(",")
-    val game: TmGameRow = TmGameRow(gameId, gameType, GameStatus.Playing, memberId1, memberId2, memberId3, cards1, cards2, cards3, dzCards, 1, now, now)
+    val game: TmGameRow = TmGameRow(gameId, gameType, GameStatus.Playing.getCode, memberId1, memberId2, memberId3, cards1, cards2, cards3, dzCards, 1, now, now)
     coordinateRepository.createGame(game)
 
     val memberResponse1: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId1))

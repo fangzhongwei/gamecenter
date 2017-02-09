@@ -26,12 +26,12 @@ public enum OnlineMemberGameStatus {
 
     private GameType type;
     private boolean inPlaying;
-    private String desc;
+    private String code;
 
-    OnlineMemberGameStatus(GameType type, boolean inPlaying, String desc) {
+    OnlineMemberGameStatus(GameType type, boolean inPlaying, String code) {
         this.type = type;
         this.inPlaying = inPlaying;
-        this.desc = desc;
+        this.code = code;
     }
 
     public GameType getType() {
@@ -50,12 +50,12 @@ public enum OnlineMemberGameStatus {
         this.inPlaying = inPlaying;
     }
 
-    public String getDesc() {
-        return desc;
+    public String getCode() {
+        return code;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public static OnlineMemberGameStatus get(GameType gameType, boolean inPlaying) {
@@ -67,9 +67,11 @@ public enum OnlineMemberGameStatus {
 
     @Override
     public String toString() {
-        return "OnlineMemberGameStatus{" +
-                "type=" + type +
-                ", desc='" + desc + '\'' +
-                '}';
+        final StringBuilder sb = new StringBuilder("OnlineMemberGameStatus{");
+        sb.append("type=").append(type);
+        sb.append(", inPlaying=").append(inPlaying);
+        sb.append(", code='").append(code).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

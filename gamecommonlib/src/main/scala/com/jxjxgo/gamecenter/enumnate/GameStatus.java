@@ -4,22 +4,22 @@ package com.jxjxgo.gamecenter.enumnate;
  * Created by fangzhongwei on 2016/12/21.
  */
 public enum GameStatus {
-    Playing((byte)1, "Playing"),
-    Finished((byte)99, "Finished");
+    Playing((short) 1, "Playing"),
+    Finished((short) 99, "Finished");
 
-    private byte code;
+    private short code;
     private String desc;
 
-    GameStatus(byte code, String desc) {
+    GameStatus(short code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
-    public byte getCode() {
+    public short getCode() {
         return code;
     }
 
-    public void setCode(byte code) {
+    public void setCode(short code) {
         this.code = code;
     }
 

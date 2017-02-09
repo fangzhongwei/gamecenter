@@ -52,12 +52,13 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], re
   }
 
   override def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse = {
-    val onlineMemberGameStatus: OnlineMemberGameStatus = getOnlineMemberGameStatus(request.memberId)
-    onlineMemberGameStatus match {
+    val status: OnlineMemberGameStatus = getOnlineMemberGameStatus(request.memberId)
+    status match {
       case OnlineMemberGameStatus.Idel =>
+        CheckGameStatusResponse(code = "0", memberId = request.memberId, gameStatus = status.getCode)
       case _ =>
+        CheckGameStatusResponse(code = "0")
     }
-    null
   }
 
   override def joinGame(traceId: String, request: JoinGameRequest): JoinGameResponse = {

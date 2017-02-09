@@ -12,7 +12,7 @@ import scala.concurrent.{Await, Future}
 
 trait CoordinateRepository extends Tables {
   this: DBComponent =>
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   import profile.api._
 
@@ -29,22 +29,21 @@ trait CoordinateRepository extends Tables {
 
   def getWaitingRoom(minRoomId: Long, maxRoomId: Long): Option[TmRoomRow] = {
     Await.result(db.run {
-      TmRoom.sortBy(_.id.asc).take(1).filter(r => (r.id between(minRoomId, maxRoomId)) && r.status === RoomStatus.Waiting.getCode.toByte).result.headOption
+      TmRoom.sortBy(_.id.asc).take(1).filter(r => (r.id between(minRoomId, maxRoomId)) && r.status === RoomStatus.Waiting.getCode.toShort).result.headOption
     }, Duration.Inf)
   }
 
   def getWaitingTable(minTableId: Long, maxTableId: Long): Option[TmTableRow] = {
     Await.result(db.run {
-      TmTable.sortBy(_.id.asc).take(1).filter(t => (t.id between(minTableId, maxTableId)) && (t.status inSet (Set(TableStatus.Idle.getCode.toByte, TableStatus.Waiting.getCode.toByte)))).result.headOption
+      TmTable.sortBy(_.id.asc).take(1).filter(t => (t.id between(minTableId, maxTableId)) && (t.status inSet (Set(TableStatus.Idle.getCode.toShort, TableStatus.Waiting.getCode.toShort)))).result.headOption
     }, Duration.Inf)
   }
 
   def getIdleSeat(minSeatId: Long, maxSeatId: Long): Option[TmSeatRow] = {
     Await.result(db.run {
-      TmSeat.sortBy(_.id.asc).take(1).filter(r => (r.id between(minSeatId, maxSeatId)) && r.status === SeatStatus.Waiting.getCode.toByte).result.headOption
+      TmSeat.sortBy(_.id.asc).take(1).filter(r => (r.id between(minSeatId, maxSeatId)) && r.status === SeatStatus.Idle.getCode.toShort).result.headOption
     }, Duration.Inf)
   }
-
 
   def sitDown(traceId: String, memberId: Long, room: TmRoomRow, table: TmTableRow, seat: TmSeatRow): Boolean = {
     var session: JdbcBackend#SessionDef = null
@@ -102,47 +101,47 @@ trait CoordinateRepository extends Tables {
 
   private def updateRoomStatus(conn: Connection, roomId: Long, newStatus: RoomStatus) = {
     val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_room SET status = ? WHERE id = ?")
-    prepareStatement.setByte(1, newStatus.getCode.toByte)
+    prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setLong(2, roomId)
     prepareStatement.executeUpdate()
   }
 
-  private def addTablePlayers(conn: Connection, tableId: Long, newStatus: TableStatus, status: Byte, currentCount: Long): Int = {
+  private def addTablePlayers(conn: Connection, tableId: Long, newStatus: TableStatus, status: Short, currentCount: Long): Int = {
     val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_table SET current_players = current_players + 1, status = ? WHERE id = ? AND status = ? AND current_players = ?")
-    prepareStatement.setByte(1, newStatus.getCode.toByte)
+    prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setLong(2, tableId)
-    prepareStatement.setByte(3, status)
+    prepareStatement.setShort(3, status)
     prepareStatement.setLong(4, currentCount)
     prepareStatement.executeUpdate()
   }
 
   private def plusTablePlayers(conn: Connection, tableId: Long, newStatus: TableStatus): Int = {
     val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_table SET current_players = current_players - 1, status = ? WHERE id = ?")
-    prepareStatement.setByte(1, newStatus.getCode.toByte)
+    prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setLong(2, tableId)
     prepareStatement.executeUpdate()
   }
 
-  private def seatSitDown(conn: Connection, memberId: Long, seatId: Long, newStatus: SeatStatus, status: Byte, traceId: String): Int = {
+  private def seatSitDown(conn: Connection, memberId: Long, seatId: Long, newStatus: SeatStatus, status: Short, traceId: String): Int = {
     val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, member_id = ?, trace_id = ? WHERE id = ? AND status = ?")
-    prepareStatement.setByte(1, newStatus.getCode.toByte)
+    prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setLong(2, memberId)
     prepareStatement.setString(3, traceId)
     prepareStatement.setLong(4, seatId)
-    prepareStatement.setByte(5, status)
+    prepareStatement.setShort(5, status)
     prepareStatement.executeUpdate()
   }
 
   private def seatStandUp(conn: Connection, seatId: Long, newStatus: SeatStatus): Int = {
     val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, member_id = 0 WHERE id = ?")
-    prepareStatement.setByte(1, newStatus.getCode.toByte)
+    prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setLong(2, seatId)
     prepareStatement.executeUpdate()
   }
 
   def getSeatsByRange(minSeatId: Long, maxSeatId: Long): Seq[TmSeatRow] = {
     val run: Future[Seq[TmSeatRow]] = db.run {
-      TmSeat.sortBy(_.id.asc).filter(r => (r.id between(minSeatId, maxSeatId)) && (r.status === SeatStatus.Playing.getCode.toByte)).result
+      TmSeat.sortBy(_.id.asc).filter { r => (r.id.between(minSeatId, maxSeatId) && r.status === SeatStatus.Playing.getCode.toShort) }.result
     }
     Await.result(run, Duration.Inf)
   }
@@ -162,7 +161,7 @@ trait CoordinateRepository extends Tables {
         case _ => TableStatus.Idle
       }
 
-      seatStandUp(conn, seatId, SeatStatus.Waiting)
+      seatStandUp(conn, seatId, SeatStatus.Idle)
       plusTablePlayers(conn, tableId, tableStatus)
       updateRoomStatus(conn, roomId, RoomStatus.Waiting)
 
@@ -177,20 +176,12 @@ trait CoordinateRepository extends Tables {
     }
   }
 
-  var gameIdIndex = -1
-
   def getNextGameId(): Long = {
-    gameIdIndex = gameIdIndex + 1
-    val sequenceName = "game_id_" + (gameIdIndex % 3)
-    Await.result(db.run(sql"""select nextval($sequenceName)""".as[(Long)]), Duration.Inf).head
+    Await.result(db.run(sql"""select nextval('seq_game_id')""".as[(Long)]), Duration.Inf).head
   }
 
-  var playCardIdIndex = -1
-
   def getNextPlayCardId(): Long = {
-    playCardIdIndex = playCardIdIndex + 1
-    val sequenceName = "play_cards_id_" + (playCardIdIndex % 10)
-    Await.result(db.run(sql"""select nextval($sequenceName)""".as[(Long)]), Duration.Inf).head
+    Await.result(db.run(sql"""select nextval('seq_play_cards_id')""".as[(Long)]), Duration.Inf).head
   }
 }
 

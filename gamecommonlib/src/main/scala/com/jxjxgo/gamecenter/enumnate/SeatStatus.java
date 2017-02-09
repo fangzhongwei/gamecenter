@@ -4,7 +4,7 @@ package com.jxjxgo.gamecenter.enumnate;
  * Created by fangzhongwei on 2016/12/20.
  */
 public enum SeatStatus {
-    Waiting(1, "Waiting"),
+    Idle(0, "Idle"),
     Dropped(-1, "Dropped"),//掉线
     Playing(99, "Playing");
 
@@ -34,9 +34,10 @@ public enum SeatStatus {
 
     @Override
     public String toString() {
-        return "RoomStatus{" +
-                "code=" + code +
-                ", desc='" + desc + '\'' +
-                '}';
+        final StringBuilder sb = new StringBuilder("SeatStatus{");
+        sb.append("code=").append(code);
+        sb.append(", desc='").append(desc).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
