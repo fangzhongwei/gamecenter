@@ -4,7 +4,7 @@
  *   rev: 014664de600267b36809bbc85225e26aec286216
  *   built at: 20160203-205352
  */
-package com.jxjxgo.game.rpc.domain
+package com.jxjxgo.gamecenter.rpc.domain
 
 import com.twitter.scrooge.{
   LazyTProtocol,
@@ -22,17 +22,15 @@ import scala.collection.mutable.{
 import scala.collection.{Map, Set}
 
 
-object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusResponse] {
+object JoinGameResponse extends ThriftStructCodec3[JoinGameResponse] {
   private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
-  val Struct = new TStruct("CheckGameStatusResponse")
+  val Struct = new TStruct("JoinGameResponse")
   val CodeField = new TField("code", TType.STRING, 1)
   val CodeFieldManifest = implicitly[Manifest[String]]
   val MemberIdField = new TField("memberId", TType.I64, 2)
   val MemberIdFieldManifest = implicitly[Manifest[Long]]
-  val GameStatusField = new TField("gameStatus", TType.STRING, 3)
-  val GameStatusFieldManifest = implicitly[Manifest[String]]
-  val TurnField = new TField("turn", TType.STRUCT, 4)
-  val TurnFieldManifest = implicitly[Manifest[com.jxjxgo.game.rpc.domain.GameTurnResponse]]
+  val TurnField = new TField("turn", TType.STRUCT, 3)
+  val TurnFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]]
 
   /**
    * Field information in declaration order.
@@ -59,18 +57,8 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      GameStatusField,
-      false,
-      false,
-      GameStatusFieldManifest,
-      _root_.scala.None,
-      _root_.scala.None,
-      immutable$Map.empty[String, String],
-      immutable$Map.empty[String, String]
-    ),
-    new ThriftStructFieldInfo(
       TurnField,
-      true,
+      false,
       false,
       TurnFieldManifest,
       _root_.scala.None,
@@ -86,10 +74,10 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
   /**
    * Checks that all required fields are non-null.
    */
-  def validate(_item: CheckGameStatusResponse): Unit = {
+  def validate(_item: JoinGameResponse): Unit = {
   }
 
-  def withoutPassthroughFields(original: CheckGameStatusResponse): CheckGameStatusResponse =
+  def withoutPassthroughFields(original: JoinGameResponse): JoinGameResponse =
     new Immutable(
       code =
         {
@@ -101,30 +89,22 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
           val field = original.memberId
           field
         },
-      gameStatus =
-        {
-          val field = original.gameStatus
-          field
-        },
       turn =
         {
           val field = original.turn
-          field.map { field =>
-            com.jxjxgo.game.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
-          }
+          com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
         }
     )
 
-  override def encode(_item: CheckGameStatusResponse, _oproto: TProtocol): Unit = {
+  override def encode(_item: JoinGameResponse, _oproto: TProtocol): Unit = {
     _item.write(_oproto)
   }
 
-  private[this] def lazyDecode(_iprot: LazyTProtocol): CheckGameStatusResponse = {
+  private[this] def lazyDecode(_iprot: LazyTProtocol): JoinGameResponse = {
 
     var codeOffset: Int = -1
     var memberId: Long = 0L
-    var gameStatusOffset: Int = -1
-    var turn: Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = None
+    var turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = null
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -167,23 +147,9 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
             }
           case 3 =>
             _field.`type` match {
-              case TType.STRING =>
-                gameStatusOffset = _iprot.offsetSkipString
-    
-              case _actualType =>
-                val _expectedType = TType.STRING
-                throw new TProtocolException(
-                  "Received wrong type for field 'gameStatus' (expected=%s, actual=%s).".format(
-                    ttypeToString(_expectedType),
-                    ttypeToString(_actualType)
-                  )
-                )
-            }
-          case 4 =>
-            _field.`type` match {
               case TType.STRUCT =>
     
-                turn = Some(readTurnValue(_iprot))
+                turn = readTurnValue(_iprot)
               case _actualType =>
                 val _expectedType = TType.STRUCT
                 throw new TProtocolException(
@@ -210,7 +176,6 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       _iprot.offset,
       codeOffset,
       memberId,
-      gameStatusOffset,
       turn,
       if (_passthroughFields == null)
         NoPassthroughFields
@@ -219,17 +184,16 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
     )
   }
 
-  override def decode(_iprot: TProtocol): CheckGameStatusResponse =
+  override def decode(_iprot: TProtocol): JoinGameResponse =
     _iprot match {
       case i: LazyTProtocol => lazyDecode(i)
       case i => eagerDecode(i)
     }
 
-  private[this] def eagerDecode(_iprot: TProtocol): CheckGameStatusResponse = {
+  private[this] def eagerDecode(_iprot: TProtocol): JoinGameResponse = {
     var code: String = ""
     var memberId: Long = 0L
-    var gameStatus: String = ""
-    var turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = _root_.scala.None
+    var turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = null
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -268,21 +232,8 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
             }
           case 3 =>
             _field.`type` match {
-              case TType.STRING =>
-                gameStatus = readGameStatusValue(_iprot)
-              case _actualType =>
-                val _expectedType = TType.STRING
-                throw new TProtocolException(
-                  "Received wrong type for field 'gameStatus' (expected=%s, actual=%s).".format(
-                    ttypeToString(_expectedType),
-                    ttypeToString(_actualType)
-                  )
-                )
-            }
-          case 4 =>
-            _field.`type` match {
               case TType.STRUCT =>
-                turn = _root_.scala.Some(readTurnValue(_iprot))
+                turn = readTurnValue(_iprot)
               case _actualType =>
                 val _expectedType = TType.STRUCT
                 throw new TProtocolException(
@@ -305,7 +256,6 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
     new Immutable(
       code,
       memberId,
-      gameStatus,
       turn,
       if (_passthroughFields == null)
         NoPassthroughFields
@@ -317,17 +267,15 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
   def apply(
     code: String = "",
     memberId: Long = 0L,
-    gameStatus: String = "",
-    turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = _root_.scala.None
-  ): CheckGameStatusResponse =
+    turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
+  ): JoinGameResponse =
     new Immutable(
       code,
       memberId,
-      gameStatus,
       turn
     )
 
-  def unapply(_item: CheckGameStatusResponse): _root_.scala.Option[scala.Product4[String, Long, String, Option[com.jxjxgo.game.rpc.domain.GameTurnResponse]]] = _root_.scala.Some(_item)
+  def unapply(_item: JoinGameResponse): _root_.scala.Option[scala.Product3[String, Long, com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]] = _root_.scala.Some(_item)
 
 
   @inline private def readCodeValue(_iprot: TProtocol): String = {
@@ -358,62 +306,45 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
     _oprot.writeI64(memberId_item)
   }
 
-  @inline private def readGameStatusValue(_iprot: TProtocol): String = {
-    _iprot.readString()
+  @inline private def readTurnValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = {
+    com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.decode(_iprot)
   }
 
-  @inline private def writeGameStatusField(gameStatus_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(GameStatusField)
-    writeGameStatusValue(gameStatus_item, _oprot)
-    _oprot.writeFieldEnd()
-  }
-
-  @inline private def writeGameStatusValue(gameStatus_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(gameStatus_item)
-  }
-
-  @inline private def readTurnValue(_iprot: TProtocol): com.jxjxgo.game.rpc.domain.GameTurnResponse = {
-    com.jxjxgo.game.rpc.domain.GameTurnResponse.decode(_iprot)
-  }
-
-  @inline private def writeTurnField(turn_item: com.jxjxgo.game.rpc.domain.GameTurnResponse, _oprot: TProtocol): Unit = {
+  @inline private def writeTurnField(turn_item: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse, _oprot: TProtocol): Unit = {
     _oprot.writeFieldBegin(TurnField)
     writeTurnValue(turn_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeTurnValue(turn_item: com.jxjxgo.game.rpc.domain.GameTurnResponse, _oprot: TProtocol): Unit = {
+  @inline private def writeTurnValue(turn_item: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse, _oprot: TProtocol): Unit = {
     turn_item.write(_oprot)
   }
 
 
-  object Immutable extends ThriftStructCodec3[CheckGameStatusResponse] {
-    override def encode(_item: CheckGameStatusResponse, _oproto: TProtocol): Unit = { _item.write(_oproto) }
-    override def decode(_iprot: TProtocol): CheckGameStatusResponse = CheckGameStatusResponse.decode(_iprot)
-    override lazy val metaData: ThriftStructMetaData[CheckGameStatusResponse] = CheckGameStatusResponse.metaData
+  object Immutable extends ThriftStructCodec3[JoinGameResponse] {
+    override def encode(_item: JoinGameResponse, _oproto: TProtocol): Unit = { _item.write(_oproto) }
+    override def decode(_iprot: TProtocol): JoinGameResponse = JoinGameResponse.decode(_iprot)
+    override lazy val metaData: ThriftStructMetaData[JoinGameResponse] = JoinGameResponse.metaData
   }
 
   /**
-   * The default read-only implementation of CheckGameStatusResponse.  You typically should not need to
-   * directly reference this class; instead, use the CheckGameStatusResponse.apply method to construct
+   * The default read-only implementation of JoinGameResponse.  You typically should not need to
+   * directly reference this class; instead, use the JoinGameResponse.apply method to construct
    * new instances.
    */
   class Immutable(
       val code: String,
       val memberId: Long,
-      val gameStatus: String,
-      val turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse],
+      val turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends CheckGameStatusResponse {
+    extends JoinGameResponse {
     def this(
       code: String = "",
       memberId: Long = 0L,
-      gameStatus: String = "",
-      turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = _root_.scala.None
+      turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
     ) = this(
       code,
       memberId,
-      gameStatus,
       turn,
       Map.empty
     )
@@ -430,10 +361,9 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       _end_offset: Int,
       codeOffset: Int,
       val memberId: Long,
-      gameStatusOffset: Int,
-      val turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse],
+      val turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends CheckGameStatusResponse {
+    extends JoinGameResponse {
 
     override def write(_oprot: TProtocol): Unit = {
       _oprot match {
@@ -447,12 +377,6 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
         ""
       else {
         _proto.decodeString(_buf, codeOffset)
-      }
-    lazy val gameStatus: String =
-      if (gameStatusOffset == -1)
-        ""
-      else {
-        _proto.decodeString(_buf, gameStatusOffset)
       }
 
     /**
@@ -470,38 +394,35 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
   }
 
   /**
-   * This Proxy trait allows you to extend the CheckGameStatusResponse trait with additional state or
-   * behavior and implement the read-only methods from CheckGameStatusResponse using an underlying
+   * This Proxy trait allows you to extend the JoinGameResponse trait with additional state or
+   * behavior and implement the read-only methods from JoinGameResponse using an underlying
    * instance.
    */
-  trait Proxy extends CheckGameStatusResponse {
-    protected def _underlying_CheckGameStatusResponse: CheckGameStatusResponse
-    override def code: String = _underlying_CheckGameStatusResponse.code
-    override def memberId: Long = _underlying_CheckGameStatusResponse.memberId
-    override def gameStatus: String = _underlying_CheckGameStatusResponse.gameStatus
-    override def turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = _underlying_CheckGameStatusResponse.turn
-    override def _passthroughFields = _underlying_CheckGameStatusResponse._passthroughFields
+  trait Proxy extends JoinGameResponse {
+    protected def _underlying_JoinGameResponse: JoinGameResponse
+    override def code: String = _underlying_JoinGameResponse.code
+    override def memberId: Long = _underlying_JoinGameResponse.memberId
+    override def turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = _underlying_JoinGameResponse.turn
+    override def _passthroughFields = _underlying_JoinGameResponse._passthroughFields
   }
 }
 
-trait CheckGameStatusResponse
+trait JoinGameResponse
   extends ThriftStruct
-  with scala.Product4[String, Long, String, Option[com.jxjxgo.game.rpc.domain.GameTurnResponse]]
+  with scala.Product3[String, Long, com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]
   with java.io.Serializable
 {
-  import CheckGameStatusResponse._
+  import JoinGameResponse._
 
   def code: String
   def memberId: Long
-  def gameStatus: String
-  def turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse]
+  def turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
   def _1 = code
   def _2 = memberId
-  def _3 = gameStatus
-  def _4 = turn
+  def _3 = turn
 
 
   /**
@@ -520,28 +441,21 @@ trait CheckGameStatusResponse
             case 1 =>
               if (code ne null) {
                 writeCodeValue(code, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.CodeField)
+                _root_.scala.Some(JoinGameResponse.CodeField)
               } else {
                 _root_.scala.None
               }
             case 2 =>
               if (true) {
                 writeMemberIdValue(memberId, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.MemberIdField)
+                _root_.scala.Some(JoinGameResponse.MemberIdField)
               } else {
                 _root_.scala.None
               }
             case 3 =>
-              if (gameStatus ne null) {
-                writeGameStatusValue(gameStatus, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.GameStatusField)
-              } else {
-                _root_.scala.None
-              }
-            case 4 =>
-              if (turn.isDefined) {
-                writeTurnValue(turn.get, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.TurnField)
+              if (turn ne null) {
+                writeTurnValue(turn, _oprot)
+                _root_.scala.Some(JoinGameResponse.TurnField)
               } else {
                 _root_.scala.None
               }
@@ -570,11 +484,10 @@ trait CheckGameStatusResponse
    * is unknown and passthrough fields are enabled, then the blob will be stored in
    * _passthroughFields.
    */
-  def setField(_blob: TFieldBlob): CheckGameStatusResponse = {
+  def setField(_blob: TFieldBlob): JoinGameResponse = {
     var code: String = this.code
     var memberId: Long = this.memberId
-    var gameStatus: String = this.gameStatus
-    var turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = this.turn
+    var turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
@@ -582,15 +495,12 @@ trait CheckGameStatusResponse
       case 2 =>
         memberId = readMemberIdValue(_blob.read)
       case 3 =>
-        gameStatus = readGameStatusValue(_blob.read)
-      case 4 =>
-        turn = _root_.scala.Some(readTurnValue(_blob.read))
+        turn = readTurnValue(_blob.read)
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
       code,
       memberId,
-      gameStatus,
       turn,
       _passthroughFields
     )
@@ -601,11 +511,10 @@ trait CheckGameStatusResponse
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetField(_fieldId: Short): CheckGameStatusResponse = {
+  def unsetField(_fieldId: Short): JoinGameResponse = {
     var code: String = this.code
     var memberId: Long = this.memberId
-    var gameStatus: String = this.gameStatus
-    var turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = this.turn
+    var turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn
 
     _fieldId match {
       case 1 =>
@@ -613,15 +522,12 @@ trait CheckGameStatusResponse
       case 2 =>
         memberId = 0L
       case 3 =>
-        gameStatus = ""
-      case 4 =>
-        turn = _root_.scala.None
+        turn = null
       case _ =>
     }
     new Immutable(
       code,
       memberId,
-      gameStatus,
       turn,
       _passthroughFields - _fieldId
     )
@@ -632,22 +538,19 @@ trait CheckGameStatusResponse
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetCode: CheckGameStatusResponse = unsetField(1)
+  def unsetCode: JoinGameResponse = unsetField(1)
 
-  def unsetMemberId: CheckGameStatusResponse = unsetField(2)
+  def unsetMemberId: JoinGameResponse = unsetField(2)
 
-  def unsetGameStatus: CheckGameStatusResponse = unsetField(3)
-
-  def unsetTurn: CheckGameStatusResponse = unsetField(4)
+  def unsetTurn: JoinGameResponse = unsetField(3)
 
 
   override def write(_oprot: TProtocol): Unit = {
-    CheckGameStatusResponse.validate(this)
+    JoinGameResponse.validate(this)
     _oprot.writeStructBegin(Struct)
     if (code ne null) writeCodeField(code, _oprot)
     writeMemberIdField(memberId, _oprot)
-    if (gameStatus ne null) writeGameStatusField(gameStatus, _oprot)
-    if (turn.isDefined) writeTurnField(turn.get, _oprot)
+    if (turn ne null) writeTurnField(turn, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -658,39 +561,36 @@ trait CheckGameStatusResponse
   def copy(
     code: String = this.code,
     memberId: Long = this.memberId,
-    gameStatus: String = this.gameStatus,
-    turn: _root_.scala.Option[com.jxjxgo.game.rpc.domain.GameTurnResponse] = this.turn,
+    turn: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
-  ): CheckGameStatusResponse =
+  ): JoinGameResponse =
     new Immutable(
       code,
       memberId,
-      gameStatus,
       turn,
       _passthroughFields
     )
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[CheckGameStatusResponse]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[JoinGameResponse]
 
   override def equals(other: Any): Boolean =
     canEqual(other) &&
       _root_.scala.runtime.ScalaRunTime._equals(this, other) &&
-      _passthroughFields == other.asInstanceOf[CheckGameStatusResponse]._passthroughFields
+      _passthroughFields == other.asInstanceOf[JoinGameResponse]._passthroughFields
 
   override def hashCode: Int = _root_.scala.runtime.ScalaRunTime._hashCode(this)
 
   override def toString: String = _root_.scala.runtime.ScalaRunTime._toString(this)
 
 
-  override def productArity: Int = 4
+  override def productArity: Int = 3
 
   override def productElement(n: Int): Any = n match {
     case 0 => this.code
     case 1 => this.memberId
-    case 2 => this.gameStatus
-    case 3 => this.turn
+    case 2 => this.turn
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 
-  override def productPrefix: String = "CheckGameStatusResponse"
+  override def productPrefix: String = "JoinGameResponse"
 }

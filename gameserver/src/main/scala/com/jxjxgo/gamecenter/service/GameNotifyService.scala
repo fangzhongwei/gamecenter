@@ -7,7 +7,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import com.jxjxgo.common.redis.RedisClientTemplate
 import com.jxjxgo.gamecenter.enumnate.GameStatus
 import com.jxjxgo.gamecenter.helper.CardsHelper
-import com.jxjxgo.gamecenter.repo.{CoordinateRepository, TmGameRow, TmSeatRow}
+import com.jxjxgo.gamecenter.repo.{TowVsOneRepository, TmGameRow, TmSeatRow}
 import com.jxjxgo.memberber.rpc.domain.{MemberEndpoint, MemberResponse}
 import com.twitter.util.{Await, Future}
 import org.slf4j.{Logger, LoggerFactory}
@@ -25,7 +25,7 @@ trait GameNotifyService {
   def createGame(traceId: String, gameType: Int, seat1: TmSeatRow, seat2: TmSeatRow, seat3: TmSeatRow)
 }
 
-class GameNotifyServiceImpl @Inject()(coordinateRepository: CoordinateRepository, redisClientTemplate: RedisClientTemplate, memberClientService: MemberEndpoint[Future]) extends GameNotifyService {
+class GameNotifyServiceImpl @Inject()(coordinateRepository: TowVsOneRepository, redisClientTemplate: RedisClientTemplate, memberClientService: MemberEndpoint[Future]) extends GameNotifyService {
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private[this] val akkaAddressPre = "gc.ddz.mi-addr:"

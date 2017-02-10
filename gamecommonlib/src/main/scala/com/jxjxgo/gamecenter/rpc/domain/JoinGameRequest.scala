@@ -4,7 +4,7 @@
  *   rev: 014664de600267b36809bbc85225e26aec286216
  *   built at: 20160203-205352
  */
-package com.jxjxgo.game.rpc.domain
+package com.jxjxgo.gamecenter.rpc.domain
 
 import com.twitter.scrooge.{
   LazyTProtocol,
@@ -22,13 +22,17 @@ import scala.collection.mutable.{
 import scala.collection.{Map, Set}
 
 
-object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
+object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
   private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
-  val Struct = new TStruct("PlayCardsRequest")
+  val Struct = new TStruct("JoinGameRequest")
   val MemberIdField = new TField("memberId", TType.I64, 1)
   val MemberIdFieldManifest = implicitly[Manifest[Long]]
-  val CardsField = new TField("cards", TType.STRING, 2)
-  val CardsFieldManifest = implicitly[Manifest[String]]
+  val FingerPrintField = new TField("fingerPrint", TType.STRING, 2)
+  val FingerPrintFieldManifest = implicitly[Manifest[String]]
+  val IpField = new TField("ip", TType.I64, 3)
+  val IpFieldManifest = implicitly[Manifest[Long]]
+  val GameTypeField = new TField("gameType", TType.STRING, 4)
+  val GameTypeFieldManifest = implicitly[Manifest[String]]
 
   /**
    * Field information in declaration order.
@@ -45,10 +49,30 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      CardsField,
+      FingerPrintField,
       false,
       false,
-      CardsFieldManifest,
+      FingerPrintFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      IpField,
+      false,
+      false,
+      IpFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      GameTypeField,
+      false,
+      false,
+      GameTypeFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
       immutable$Map.empty[String, String],
@@ -62,31 +86,43 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
   /**
    * Checks that all required fields are non-null.
    */
-  def validate(_item: PlayCardsRequest): Unit = {
+  def validate(_item: JoinGameRequest): Unit = {
   }
 
-  def withoutPassthroughFields(original: PlayCardsRequest): PlayCardsRequest =
+  def withoutPassthroughFields(original: JoinGameRequest): JoinGameRequest =
     new Immutable(
       memberId =
         {
           val field = original.memberId
           field
         },
-      cards =
+      fingerPrint =
         {
-          val field = original.cards
+          val field = original.fingerPrint
+          field
+        },
+      ip =
+        {
+          val field = original.ip
+          field
+        },
+      gameType =
+        {
+          val field = original.gameType
           field
         }
     )
 
-  override def encode(_item: PlayCardsRequest, _oproto: TProtocol): Unit = {
+  override def encode(_item: JoinGameRequest, _oproto: TProtocol): Unit = {
     _item.write(_oproto)
   }
 
-  private[this] def lazyDecode(_iprot: LazyTProtocol): PlayCardsRequest = {
+  private[this] def lazyDecode(_iprot: LazyTProtocol): JoinGameRequest = {
 
     var memberId: Long = 0L
-    var cardsOffset: Int = -1
+    var fingerPrintOffset: Int = -1
+    var ip: Long = 0L
+    var gameTypeOffset: Int = -1
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -116,12 +152,40 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
           case 2 =>
             _field.`type` match {
               case TType.STRING =>
-                cardsOffset = _iprot.offsetSkipString
+                fingerPrintOffset = _iprot.offsetSkipString
     
               case _actualType =>
                 val _expectedType = TType.STRING
                 throw new TProtocolException(
-                  "Received wrong type for field 'cards' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'fingerPrint' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 3 =>
+            _field.`type` match {
+              case TType.I64 =>
+    
+                ip = readIpValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'ip' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 4 =>
+            _field.`type` match {
+              case TType.STRING =>
+                gameTypeOffset = _iprot.offsetSkipString
+    
+              case _actualType =>
+                val _expectedType = TType.STRING
+                throw new TProtocolException(
+                  "Received wrong type for field 'gameType' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -143,7 +207,9 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       _start_offset,
       _iprot.offset,
       memberId,
-      cardsOffset,
+      fingerPrintOffset,
+      ip,
+      gameTypeOffset,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -151,15 +217,17 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
     )
   }
 
-  override def decode(_iprot: TProtocol): PlayCardsRequest =
+  override def decode(_iprot: TProtocol): JoinGameRequest =
     _iprot match {
       case i: LazyTProtocol => lazyDecode(i)
       case i => eagerDecode(i)
     }
 
-  private[this] def eagerDecode(_iprot: TProtocol): PlayCardsRequest = {
+  private[this] def eagerDecode(_iprot: TProtocol): JoinGameRequest = {
     var memberId: Long = 0L
-    var cards: String = ""
+    var fingerPrint: String = ""
+    var ip: Long = 0L
+    var gameType: String = ""
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -186,11 +254,37 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
           case 2 =>
             _field.`type` match {
               case TType.STRING =>
-                cards = readCardsValue(_iprot)
+                fingerPrint = readFingerPrintValue(_iprot)
               case _actualType =>
                 val _expectedType = TType.STRING
                 throw new TProtocolException(
-                  "Received wrong type for field 'cards' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'fingerPrint' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 3 =>
+            _field.`type` match {
+              case TType.I64 =>
+                ip = readIpValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'ip' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 4 =>
+            _field.`type` match {
+              case TType.STRING =>
+                gameType = readGameTypeValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.STRING
+                throw new TProtocolException(
+                  "Received wrong type for field 'gameType' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -208,7 +302,9 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
 
     new Immutable(
       memberId,
-      cards,
+      fingerPrint,
+      ip,
+      gameType,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -218,14 +314,18 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
 
   def apply(
     memberId: Long = 0L,
-    cards: String = ""
-  ): PlayCardsRequest =
+    fingerPrint: String = "",
+    ip: Long = 0L,
+    gameType: String = ""
+  ): JoinGameRequest =
     new Immutable(
       memberId,
-      cards
+      fingerPrint,
+      ip,
+      gameType
     )
 
-  def unapply(_item: PlayCardsRequest): _root_.scala.Option[scala.Product2[Long, String]] = _root_.scala.Some(_item)
+  def unapply(_item: JoinGameRequest): _root_.scala.Option[scala.Product4[Long, String, Long, String]] = _root_.scala.Some(_item)
 
 
   @inline private def readMemberIdValue(_iprot: TProtocol): Long = {
@@ -242,43 +342,77 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
     _oprot.writeI64(memberId_item)
   }
 
-  @inline private def readCardsValue(_iprot: TProtocol): String = {
+  @inline private def readFingerPrintValue(_iprot: TProtocol): String = {
     _iprot.readString()
   }
 
-  @inline private def writeCardsField(cards_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(CardsField)
-    writeCardsValue(cards_item, _oprot)
+  @inline private def writeFingerPrintField(fingerPrint_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(FingerPrintField)
+    writeFingerPrintValue(fingerPrint_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeCardsValue(cards_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(cards_item)
+  @inline private def writeFingerPrintValue(fingerPrint_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeString(fingerPrint_item)
+  }
+
+  @inline private def readIpValue(_iprot: TProtocol): Long = {
+    _iprot.readI64()
+  }
+
+  @inline private def writeIpField(ip_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(IpField)
+    writeIpValue(ip_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeIpValue(ip_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeI64(ip_item)
+  }
+
+  @inline private def readGameTypeValue(_iprot: TProtocol): String = {
+    _iprot.readString()
+  }
+
+  @inline private def writeGameTypeField(gameType_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(GameTypeField)
+    writeGameTypeValue(gameType_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeGameTypeValue(gameType_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeString(gameType_item)
   }
 
 
-  object Immutable extends ThriftStructCodec3[PlayCardsRequest] {
-    override def encode(_item: PlayCardsRequest, _oproto: TProtocol): Unit = { _item.write(_oproto) }
-    override def decode(_iprot: TProtocol): PlayCardsRequest = PlayCardsRequest.decode(_iprot)
-    override lazy val metaData: ThriftStructMetaData[PlayCardsRequest] = PlayCardsRequest.metaData
+  object Immutable extends ThriftStructCodec3[JoinGameRequest] {
+    override def encode(_item: JoinGameRequest, _oproto: TProtocol): Unit = { _item.write(_oproto) }
+    override def decode(_iprot: TProtocol): JoinGameRequest = JoinGameRequest.decode(_iprot)
+    override lazy val metaData: ThriftStructMetaData[JoinGameRequest] = JoinGameRequest.metaData
   }
 
   /**
-   * The default read-only implementation of PlayCardsRequest.  You typically should not need to
-   * directly reference this class; instead, use the PlayCardsRequest.apply method to construct
+   * The default read-only implementation of JoinGameRequest.  You typically should not need to
+   * directly reference this class; instead, use the JoinGameRequest.apply method to construct
    * new instances.
    */
   class Immutable(
       val memberId: Long,
-      val cards: String,
+      val fingerPrint: String,
+      val ip: Long,
+      val gameType: String,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends PlayCardsRequest {
+    extends JoinGameRequest {
     def this(
       memberId: Long = 0L,
-      cards: String = ""
+      fingerPrint: String = "",
+      ip: Long = 0L,
+      gameType: String = ""
     ) = this(
       memberId,
-      cards,
+      fingerPrint,
+      ip,
+      gameType,
       Map.empty
     )
   }
@@ -293,9 +427,11 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       _start_offset: Int,
       _end_offset: Int,
       val memberId: Long,
-      cardsOffset: Int,
+      fingerPrintOffset: Int,
+      val ip: Long,
+      gameTypeOffset: Int,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends PlayCardsRequest {
+    extends JoinGameRequest {
 
     override def write(_oprot: TProtocol): Unit = {
       _oprot match {
@@ -304,11 +440,17 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       }
     }
 
-    lazy val cards: String =
-      if (cardsOffset == -1)
+    lazy val fingerPrint: String =
+      if (fingerPrintOffset == -1)
         ""
       else {
-        _proto.decodeString(_buf, cardsOffset)
+        _proto.decodeString(_buf, fingerPrintOffset)
+      }
+    lazy val gameType: String =
+      if (gameTypeOffset == -1)
+        ""
+      else {
+        _proto.decodeString(_buf, gameTypeOffset)
       }
 
     /**
@@ -326,32 +468,38 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
   }
 
   /**
-   * This Proxy trait allows you to extend the PlayCardsRequest trait with additional state or
-   * behavior and implement the read-only methods from PlayCardsRequest using an underlying
+   * This Proxy trait allows you to extend the JoinGameRequest trait with additional state or
+   * behavior and implement the read-only methods from JoinGameRequest using an underlying
    * instance.
    */
-  trait Proxy extends PlayCardsRequest {
-    protected def _underlying_PlayCardsRequest: PlayCardsRequest
-    override def memberId: Long = _underlying_PlayCardsRequest.memberId
-    override def cards: String = _underlying_PlayCardsRequest.cards
-    override def _passthroughFields = _underlying_PlayCardsRequest._passthroughFields
+  trait Proxy extends JoinGameRequest {
+    protected def _underlying_JoinGameRequest: JoinGameRequest
+    override def memberId: Long = _underlying_JoinGameRequest.memberId
+    override def fingerPrint: String = _underlying_JoinGameRequest.fingerPrint
+    override def ip: Long = _underlying_JoinGameRequest.ip
+    override def gameType: String = _underlying_JoinGameRequest.gameType
+    override def _passthroughFields = _underlying_JoinGameRequest._passthroughFields
   }
 }
 
-trait PlayCardsRequest
+trait JoinGameRequest
   extends ThriftStruct
-  with scala.Product2[Long, String]
+  with scala.Product4[Long, String, Long, String]
   with java.io.Serializable
 {
-  import PlayCardsRequest._
+  import JoinGameRequest._
 
   def memberId: Long
-  def cards: String
+  def fingerPrint: String
+  def ip: Long
+  def gameType: String
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
   def _1 = memberId
-  def _2 = cards
+  def _2 = fingerPrint
+  def _3 = ip
+  def _4 = gameType
 
 
   /**
@@ -370,14 +518,28 @@ trait PlayCardsRequest
             case 1 =>
               if (true) {
                 writeMemberIdValue(memberId, _oprot)
-                _root_.scala.Some(PlayCardsRequest.MemberIdField)
+                _root_.scala.Some(JoinGameRequest.MemberIdField)
               } else {
                 _root_.scala.None
               }
             case 2 =>
-              if (cards ne null) {
-                writeCardsValue(cards, _oprot)
-                _root_.scala.Some(PlayCardsRequest.CardsField)
+              if (fingerPrint ne null) {
+                writeFingerPrintValue(fingerPrint, _oprot)
+                _root_.scala.Some(JoinGameRequest.FingerPrintField)
+              } else {
+                _root_.scala.None
+              }
+            case 3 =>
+              if (true) {
+                writeIpValue(ip, _oprot)
+                _root_.scala.Some(JoinGameRequest.IpField)
+              } else {
+                _root_.scala.None
+              }
+            case 4 =>
+              if (gameType ne null) {
+                writeGameTypeValue(gameType, _oprot)
+                _root_.scala.Some(JoinGameRequest.GameTypeField)
               } else {
                 _root_.scala.None
               }
@@ -406,20 +568,28 @@ trait PlayCardsRequest
    * is unknown and passthrough fields are enabled, then the blob will be stored in
    * _passthroughFields.
    */
-  def setField(_blob: TFieldBlob): PlayCardsRequest = {
+  def setField(_blob: TFieldBlob): JoinGameRequest = {
     var memberId: Long = this.memberId
-    var cards: String = this.cards
+    var fingerPrint: String = this.fingerPrint
+    var ip: Long = this.ip
+    var gameType: String = this.gameType
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
         memberId = readMemberIdValue(_blob.read)
       case 2 =>
-        cards = readCardsValue(_blob.read)
+        fingerPrint = readFingerPrintValue(_blob.read)
+      case 3 =>
+        ip = readIpValue(_blob.read)
+      case 4 =>
+        gameType = readGameTypeValue(_blob.read)
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
       memberId,
-      cards,
+      fingerPrint,
+      ip,
+      gameType,
       _passthroughFields
     )
   }
@@ -429,20 +599,28 @@ trait PlayCardsRequest
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetField(_fieldId: Short): PlayCardsRequest = {
+  def unsetField(_fieldId: Short): JoinGameRequest = {
     var memberId: Long = this.memberId
-    var cards: String = this.cards
+    var fingerPrint: String = this.fingerPrint
+    var ip: Long = this.ip
+    var gameType: String = this.gameType
 
     _fieldId match {
       case 1 =>
         memberId = 0L
       case 2 =>
-        cards = ""
+        fingerPrint = ""
+      case 3 =>
+        ip = 0L
+      case 4 =>
+        gameType = ""
       case _ =>
     }
     new Immutable(
       memberId,
-      cards,
+      fingerPrint,
+      ip,
+      gameType,
       _passthroughFields - _fieldId
     )
   }
@@ -452,16 +630,22 @@ trait PlayCardsRequest
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetMemberId: PlayCardsRequest = unsetField(1)
+  def unsetMemberId: JoinGameRequest = unsetField(1)
 
-  def unsetCards: PlayCardsRequest = unsetField(2)
+  def unsetFingerPrint: JoinGameRequest = unsetField(2)
+
+  def unsetIp: JoinGameRequest = unsetField(3)
+
+  def unsetGameType: JoinGameRequest = unsetField(4)
 
 
   override def write(_oprot: TProtocol): Unit = {
-    PlayCardsRequest.validate(this)
+    JoinGameRequest.validate(this)
     _oprot.writeStructBegin(Struct)
     writeMemberIdField(memberId, _oprot)
-    if (cards ne null) writeCardsField(cards, _oprot)
+    if (fingerPrint ne null) writeFingerPrintField(fingerPrint, _oprot)
+    writeIpField(ip, _oprot)
+    if (gameType ne null) writeGameTypeField(gameType, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -471,34 +655,40 @@ trait PlayCardsRequest
 
   def copy(
     memberId: Long = this.memberId,
-    cards: String = this.cards,
+    fingerPrint: String = this.fingerPrint,
+    ip: Long = this.ip,
+    gameType: String = this.gameType,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
-  ): PlayCardsRequest =
+  ): JoinGameRequest =
     new Immutable(
       memberId,
-      cards,
+      fingerPrint,
+      ip,
+      gameType,
       _passthroughFields
     )
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[PlayCardsRequest]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[JoinGameRequest]
 
   override def equals(other: Any): Boolean =
     canEqual(other) &&
       _root_.scala.runtime.ScalaRunTime._equals(this, other) &&
-      _passthroughFields == other.asInstanceOf[PlayCardsRequest]._passthroughFields
+      _passthroughFields == other.asInstanceOf[JoinGameRequest]._passthroughFields
 
   override def hashCode: Int = _root_.scala.runtime.ScalaRunTime._hashCode(this)
 
   override def toString: String = _root_.scala.runtime.ScalaRunTime._toString(this)
 
 
-  override def productArity: Int = 2
+  override def productArity: Int = 4
 
   override def productElement(n: Int): Any = n match {
     case 0 => this.memberId
-    case 1 => this.cards
+    case 1 => this.fingerPrint
+    case 2 => this.ip
+    case 3 => this.gameType
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 
-  override def productPrefix: String = "PlayCardsRequest"
+  override def productPrefix: String = "JoinGameRequest"
 }

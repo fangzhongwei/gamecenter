@@ -2,7 +2,7 @@ package com.jxjxgo.gamecenter.service
 
 import javax.inject.Inject
 
-import com.jxjxgo.game.rpc.domain._
+import com.jxjxgo.gamecenter.rpc.domain._
 import com.twitter.util.Future
 
 /**
@@ -23,5 +23,17 @@ class GameEndpointImpl @Inject()(gameService: GameService) extends GameEndpoint[
 
   override def setGameStatus(traceId: String, memberId: Long, gameStatus: String): Future[GameBaseResponse] = {
     Future.value(gameService.setGameStatus(traceId, memberId, gameStatus))
+  }
+
+  override def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String = "rpc"): Future[GameBaseResponse] = {
+    Future.value(gameService.saveChannelAddress(traceId, memberId, host, addressType))
+  }
+
+  override def playerOnline(traceId: String, request: OnlineRequest): Future[GameBaseResponse] = {
+    Future.value(gameService.playerOnline(traceId, request))
+  }
+
+  override def playerOffline(traceId: String, socketUuid: String, memberId: Long): Future[GameBaseResponse] = {
+    Future.value(gameService.playerOffline(traceId, socketUuid, memberId))
   }
 }

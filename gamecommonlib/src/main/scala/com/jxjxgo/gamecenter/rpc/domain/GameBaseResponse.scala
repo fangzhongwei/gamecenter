@@ -4,7 +4,7 @@
  *   rev: 014664de600267b36809bbc85225e26aec286216
  *   built at: 20160203-205352
  */
-package com.jxjxgo.game.rpc.domain
+package com.jxjxgo.gamecenter.rpc.domain
 
 import com.twitter.scrooge.{
   LazyTProtocol,

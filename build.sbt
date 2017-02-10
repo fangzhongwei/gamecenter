@@ -26,6 +26,7 @@ lazy val gameserver = (project in file("gameserver")).settings(commonSettings: _
   name := """gameserver""",
   libraryDependencies ++= Seq(
     "com.jxjxgo.common" % "common-db_2.11" % "1.0",
+    "com.jxjxgo.common" % "common-kafka_2.11" % "1.0",
     "com.jxjxgo.common" % "common-error_2.11" % "1.0",
     "com.jxjxgo.gamecenter" % "gamecommonlib_2.11" % "1.0",
     "com.jxjxgo.member" % "membercommonlib_2.11" % "1.0"

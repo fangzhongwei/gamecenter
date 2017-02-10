@@ -22,7 +22,7 @@ trait CoordinateService extends ConsumeService {
 
 }
 
-class CoordinateServiceImpl @Inject()(coordinateRepository: CoordinateRepository, redisClientTemplate: RedisClientTemplate, gameNotifyService: GameNotifyService) extends CoordinateService {
+class CoordinateServiceImpl @Inject()(coordinateRepository: TowVsOneRepository, redisClientTemplate: RedisClientTemplate, gameNotifyService: GameNotifyService) extends CoordinateService {
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private[this] val gameTypeRoomRangeMap: util.Map[Int, (Long, Long)] = new ConcurrentHashMap[Int, (Long, Long)]()

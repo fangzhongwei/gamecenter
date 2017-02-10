@@ -4,7 +4,7 @@
  *   rev: 014664de600267b36809bbc85225e26aec286216
  *   built at: 20160203-205352
  */
-package com.jxjxgo.game.rpc.domain
+package com.jxjxgo.gamecenter.rpc.domain
 
 import com.twitter.finagle.Thrift
 import com.twitter.finagle.stats.{NullStatsReceiver, StatsReceiver}
@@ -131,6 +131,108 @@ class GameEndpoint$FinagleService(
   // ---- end boilerplate.
 
   private[this] val scopedStats = if (serviceName != "") stats.scope(serviceName) else stats
+  private[this] object __stats_playerOnline {
+    val RequestsCounter = scopedStats.scope("playerOnline").counter("requests")
+    val SuccessCounter = scopedStats.scope("playerOnline").counter("success")
+    val FailuresCounter = scopedStats.scope("playerOnline").counter("failures")
+    val FailuresScope = scopedStats.scope("playerOnline").scope("failures")
+  }
+  addFunction("playerOnline", { (iprot: TProtocol, seqid: Int) =>
+    try {
+      __stats_playerOnline.RequestsCounter.incr()
+      val args = PlayerOnline.Args.decode(iprot)
+      iprot.readMessageEnd()
+      (try {
+        iface.playerOnline(args.traceId, args.request)
+      } catch {
+        case e: Exception => Future.exception(e)
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
+        reply("playerOnline", seqid, PlayerOnline.Result(success = Some(value)))
+      }.rescue {
+        case e => Future.exception(e)
+      }.respond {
+        case Return(_) =>
+          __stats_playerOnline.SuccessCounter.incr()
+        case Throw(ex) =>
+          __stats_playerOnline.FailuresCounter.incr()
+          __stats_playerOnline.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+      }
+    } catch {
+      case e: TProtocolException => {
+        iprot.readMessageEnd()
+        exception("playerOnline", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+      }
+      case e: Exception => Future.exception(e)
+    }
+  })
+  private[this] object __stats_playerOffline {
+    val RequestsCounter = scopedStats.scope("playerOffline").counter("requests")
+    val SuccessCounter = scopedStats.scope("playerOffline").counter("success")
+    val FailuresCounter = scopedStats.scope("playerOffline").counter("failures")
+    val FailuresScope = scopedStats.scope("playerOffline").scope("failures")
+  }
+  addFunction("playerOffline", { (iprot: TProtocol, seqid: Int) =>
+    try {
+      __stats_playerOffline.RequestsCounter.incr()
+      val args = PlayerOffline.Args.decode(iprot)
+      iprot.readMessageEnd()
+      (try {
+        iface.playerOffline(args.traceId, args.socketUuid, args.memberId)
+      } catch {
+        case e: Exception => Future.exception(e)
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
+        reply("playerOffline", seqid, PlayerOffline.Result(success = Some(value)))
+      }.rescue {
+        case e => Future.exception(e)
+      }.respond {
+        case Return(_) =>
+          __stats_playerOffline.SuccessCounter.incr()
+        case Throw(ex) =>
+          __stats_playerOffline.FailuresCounter.incr()
+          __stats_playerOffline.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+      }
+    } catch {
+      case e: TProtocolException => {
+        iprot.readMessageEnd()
+        exception("playerOffline", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+      }
+      case e: Exception => Future.exception(e)
+    }
+  })
+  private[this] object __stats_saveChannelAddress {
+    val RequestsCounter = scopedStats.scope("saveChannelAddress").counter("requests")
+    val SuccessCounter = scopedStats.scope("saveChannelAddress").counter("success")
+    val FailuresCounter = scopedStats.scope("saveChannelAddress").counter("failures")
+    val FailuresScope = scopedStats.scope("saveChannelAddress").scope("failures")
+  }
+  addFunction("saveChannelAddress", { (iprot: TProtocol, seqid: Int) =>
+    try {
+      __stats_saveChannelAddress.RequestsCounter.incr()
+      val args = SaveChannelAddress.Args.decode(iprot)
+      iprot.readMessageEnd()
+      (try {
+        iface.saveChannelAddress(args.traceId, args.memberId, args.host, args.addressType)
+      } catch {
+        case e: Exception => Future.exception(e)
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
+        reply("saveChannelAddress", seqid, SaveChannelAddress.Result(success = Some(value)))
+      }.rescue {
+        case e => Future.exception(e)
+      }.respond {
+        case Return(_) =>
+          __stats_saveChannelAddress.SuccessCounter.incr()
+        case Throw(ex) =>
+          __stats_saveChannelAddress.FailuresCounter.incr()
+          __stats_saveChannelAddress.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+      }
+    } catch {
+      case e: TProtocolException => {
+        iprot.readMessageEnd()
+        exception("saveChannelAddress", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+      }
+      case e: Exception => Future.exception(e)
+    }
+  })
   private[this] object __stats_checkGameStatus {
     val RequestsCounter = scopedStats.scope("checkGameStatus").counter("requests")
     val SuccessCounter = scopedStats.scope("checkGameStatus").counter("success")
@@ -146,7 +248,7 @@ class GameEndpoint$FinagleService(
         iface.checkGameStatus(args.traceId, args.request)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.game.rpc.domain.CheckGameStatusResponse =>
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.CheckGameStatusResponse =>
         reply("checkGameStatus", seqid, CheckGameStatus.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)
@@ -180,7 +282,7 @@ class GameEndpoint$FinagleService(
         iface.joinGame(args.traceId, args.request)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.game.rpc.domain.JoinGameResponse =>
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse =>
         reply("joinGame", seqid, JoinGame.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)
@@ -214,7 +316,7 @@ class GameEndpoint$FinagleService(
         iface.playCards(args.traceId, args.request)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.game.rpc.domain.PlayCardsResponse =>
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse =>
         reply("playCards", seqid, PlayCards.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)
@@ -248,7 +350,7 @@ class GameEndpoint$FinagleService(
         iface.setGameStatus(args.traceId, args.memberId, args.gameStatus)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.game.rpc.domain.GameBaseResponse =>
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
         reply("setGameStatus", seqid, SetGameStatus.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)

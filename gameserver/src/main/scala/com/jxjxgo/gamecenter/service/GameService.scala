@@ -1,11 +1,12 @@
 package com.jxjxgo.gamecenter.service
 
+import java.sql.Timestamp
 import javax.inject.Inject
 
-import com.jxjxgo.common.rabbitmq.RabbitmqProducerTemplate
-import com.jxjxgo.common.redis.RedisClientTemplate
-import com.jxjxgo.game.rpc.domain._
-import com.jxjxgo.gamecenter.enumnate.OnlineMemberGameStatus
+import com.jxjxgo.common.kafka.template.ProducerTemplate
+import com.jxjxgo.gamecenter.enumnate.{GameStatus, SeatStatus}
+import com.jxjxgo.gamecenter.repo.{TmChannelAddressRow, TmOnlineRecordRow, TmSeatRow, TowVsOneRepository}
+import com.jxjxgo.gamecenter.rpc.domain._
 import com.jxjxgo.sso.rpc.domain.SSOServiceEndpoint
 import com.twitter.util.Future
 import org.slf4j.{Logger, LoggerFactory}
@@ -14,6 +15,12 @@ import org.slf4j.{Logger, LoggerFactory}
   * Created by fangzhongwei on 2016/12/16.
   */
 trait GameService {
+  def playerOffline(traceId: String, socketUuid: String, memberId: Long): GameBaseResponse
+
+  def playerOnline(traceId: String, request: OnlineRequest): GameBaseResponse
+
+  def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String): GameBaseResponse
+
   def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse
 
   def joinGame(traceId: String, request: JoinGameRequest): JoinGameResponse
@@ -23,41 +30,38 @@ trait GameService {
   def setGameStatus(traceId: String, memberId: Long, gameStatus: String): GameBaseResponse
 }
 
-class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], redisClientTemplate: RedisClientTemplate, rabbitmqProducerTemplate: RabbitmqProducerTemplate) extends GameService {
+class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], producerTemplate: ProducerTemplate, towVsOneRepository: TowVsOneRepository) extends GameService {
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   // game center, ddz , key:memberId, value:game status
   private[this] val gameStatusPre = "gc.ddz.mi-gs:"
   private[this] val gameStatusExpireSeconds = 24 * 60 * 60
   // game center, ddz , key:memberId, value:akka address
-  private[this] val akkaAddressPre = "gc.ddz.mi-addr:"
-  private[this] val akkaAddressExpireSeconds = 24 * 60 * 60
+  private[this] val addressPre = "gc.ddz.mi-addr:"
+  private[this] val addressExpireSeconds = 24 * 60 * 60
 
-  def setOnlineMemberChannelAddress(memberId: Long, akkaHostname: String, akkaPort: Int) = {
-    redisClientTemplate.setString(new StringBuilder(akkaAddressPre).append(memberId).toString, new StringBuilder(akkaHostname).append(":").append(akkaPort).toString, akkaAddressExpireSeconds)
-  }
-
-  def setOnlineMemberGameStatus(memberId: Long, status: OnlineMemberGameStatus): Unit = {
-    redisClientTemplate.setString(new StringBuilder(gameStatusPre).append(memberId).toString, status.toString, gameStatusExpireSeconds)
-  }
-
-  def getOnlineMemberGameStatus(memberId: Long): OnlineMemberGameStatus = {
-    redisClientTemplate.getString(new StringBuilder(gameStatusPre).append(memberId).toString) match {
-      case Some(string) => (string == null || "".equals(string)) match {
-        case true => OnlineMemberGameStatus.Idel
-        case false => OnlineMemberGameStatus.valueOf(string)
-      }
-      case None => OnlineMemberGameStatus.Idel
-    }
+  implicit def convert(s: TmSeatRow): GameTurnResponse = {
+    GameTurnResponse(gameId = s.gameId, gameType = s.gameType)
   }
 
   override def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse = {
-    val status: OnlineMemberGameStatus = getOnlineMemberGameStatus(request.memberId)
-    status match {
-      case OnlineMemberGameStatus.Idel =>
-        CheckGameStatusResponse(code = "0", memberId = request.memberId, gameStatus = status.getCode)
-      case _ =>
-        CheckGameStatusResponse(code = "0")
+    val memberId: Long = request.memberId
+    towVsOneRepository.findPlayingSeatByMemberAndStatus(memberId, Set(SeatStatus.Playing.getCode.toShort, SeatStatus.Dropped.getCode.toShort)) match {
+      case Some(seat) =>
+        val gamesStatus: GameStatus = towVsOneRepository.selectGameStatus(seat.gameId)
+        gamesStatus match {
+          case GameStatus.Playing =>
+            request.fingerPrint.equals(seat.fingerPrint) match {
+              case true =>
+                CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = true, turn = Some(seat))
+              case false =>
+                CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = false)
+            }
+          case _ =>
+            CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = false)
+        }
+      case None =>
+        CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = false)
     }
   }
 
@@ -71,5 +75,26 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], re
 
   override def setGameStatus(traceId: String, memberId: Long, gameStatus: String): GameBaseResponse = {
     null
+  }
+
+  override def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String): GameBaseResponse = {
+    val timestamp: Timestamp = new Timestamp(System.currentTimeMillis())
+    towVsOneRepository.updateOrInsertChannelAddress(TmChannelAddressRow(memberId, host, "rpc", timestamp, timestamp))
+    GameBaseResponse("0")
+  }
+
+  override def playerOffline(traceId: String, socketUuid: String, memberId: Long): GameBaseResponse = {
+    towVsOneRepository.offline(socketUuid)
+    towVsOneRepository.findPlayingSeatByMemberAndStatus(memberId, Set(SeatStatus.Playing.getCode.toShort)) match {
+      case Some(seat) =>
+        towVsOneRepository.playerDropped(seat.id, SeatStatus.Dropped)
+      case None =>
+    }
+    GameBaseResponse("0")
+  }
+
+  override def playerOnline(traceId: String, r: OnlineRequest): GameBaseResponse = {
+    towVsOneRepository.createOnlineRecord(TmOnlineRecordRow(r.socketUuid, r.deviceType.toShort, r.fingerPrint, r.memberId, r.ip, r.host, new Timestamp(System.currentTimeMillis()), None, true))
+    GameBaseResponse("0")
   }
 }

@@ -31,6 +31,13 @@ public enum GameStatus {
         this.desc = desc;
     }
 
+    public static GameStatus get(short code) {
+        for(GameStatus status: GameStatus.values()) {
+            if (status.getCode() == code) return status;
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return "GameStatus{" +

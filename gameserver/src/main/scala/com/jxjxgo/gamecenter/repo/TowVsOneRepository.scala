@@ -1,8 +1,8 @@
 package com.jxjxgo.gamecenter.repo
 
-import java.sql.{Connection, PreparedStatement}
+import java.sql.{Connection, PreparedStatement, Timestamp}
 
-import com.jxjxgo.gamecenter.enumnate.{RoomStatus, SeatStatus, TableStatus}
+import com.jxjxgo.gamecenter.enumnate.{GameStatus, RoomStatus, SeatStatus, TableStatus}
 import com.jxjxgo.mysql.connection.DBComponent
 import org.slf4j.{Logger, LoggerFactory}
 import slick.jdbc.JdbcBackend
@@ -10,8 +10,9 @@ import slick.jdbc.JdbcBackend
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-trait CoordinateRepository extends Tables {
+trait TowVsOneRepository extends Tables {
   this: DBComponent =>
+
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   import profile.api._
@@ -176,6 +177,41 @@ trait CoordinateRepository extends Tables {
     }
   }
 
+  def findPlayingSeatByMemberAndStatus(memberId: Long, set: Set[Short]): Option[TmSeatRow] = {
+    Await.result(db.run {
+      TmSeat.sortBy(_.id.desc).filter { r => (r.memberId === memberId && (r.status inSet (set))) }.result.headOption
+    }, Duration.Inf)
+  }
+
+  def updateOrInsertChannelAddress(row: TmChannelAddressRow) = {
+    val memberId = row.memberId
+    val result: Int = Await.result(db.run {
+      TmChannelAddress.filter(_.memberId === memberId).length.result
+    }, Duration.Inf)
+    result > 0 match {
+      case true => db.run(TmChannelAddress.filter(_.memberId === memberId).map(r => (r.host, r.gmtUpdate)).update(row.host, row.gmtUpdate))
+      case false => db.run(TmChannelAddress += row)
+    }
+  }
+
+  def createOnlineRecord(row: TmOnlineRecordRow) = db.run {
+    TmOnlineRecord += row
+  }
+
+  def selectGameStatus(gameId: Long): GameStatus = {
+    Await.result(db.run {
+      TmGame.filter(_.id === gameId).map(_.status).result.head.map(GameStatus.get(_))
+    }, Duration.Inf)
+  }
+
+  def playerDropped(seatId: Long, seatStatus: SeatStatus) = db.run {
+    TmSeat.filter(_.id === seatId).map(r => (r.status, r.gmtUpdate)).update(seatStatus.getCode.toShort, new Timestamp(System.currentTimeMillis()))
+  }
+
+  def offline(socketUuid: String) = db.run {
+    TmOnlineRecord.filter(_.socketUuid === socketUuid).map(r => (r.online, r.gmtOffline)).update(false, Some(new Timestamp(System.currentTimeMillis())))
+  }
+
   def getNextGameId(): Long = {
     Await.result(db.run(sql"""select nextval('seq_game_id')""".as[(Long)]), Duration.Inf).head
   }
@@ -185,4 +221,4 @@ trait CoordinateRepository extends Tables {
   }
 }
 
-class CoordinateRepositoryImpl extends CoordinateRepository with DBComponent
+class TowVsOneRepositoryImpl extends TowVsOneRepository with DBComponent

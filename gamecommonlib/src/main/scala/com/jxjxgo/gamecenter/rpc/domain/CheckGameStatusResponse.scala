@@ -4,7 +4,7 @@
  *   rev: 014664de600267b36809bbc85225e26aec286216
  *   built at: 20160203-205352
  */
-package com.jxjxgo.game.rpc.domain
+package com.jxjxgo.gamecenter.rpc.domain
 
 import com.twitter.scrooge.{
   LazyTProtocol,
@@ -22,22 +22,32 @@ import scala.collection.mutable.{
 import scala.collection.{Map, Set}
 
 
-object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
+object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusResponse] {
   private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
-  val Struct = new TStruct("JoinGameRequest")
-  val MemberIdField = new TField("memberId", TType.I64, 1)
+  val Struct = new TStruct("CheckGameStatusResponse")
+  val CodeField = new TField("code", TType.STRING, 1)
+  val CodeFieldManifest = implicitly[Manifest[String]]
+  val MemberIdField = new TField("memberId", TType.I64, 2)
   val MemberIdFieldManifest = implicitly[Manifest[Long]]
-  val FingerPrintField = new TField("fingerPrint", TType.STRING, 2)
-  val FingerPrintFieldManifest = implicitly[Manifest[String]]
-  val IpField = new TField("ip", TType.I64, 3)
-  val IpFieldManifest = implicitly[Manifest[Long]]
-  val GameTypeField = new TField("gameType", TType.STRING, 4)
-  val GameTypeFieldManifest = implicitly[Manifest[String]]
+  val ReconnectField = new TField("reconnect", TType.BOOL, 3)
+  val ReconnectFieldManifest = implicitly[Manifest[Boolean]]
+  val TurnField = new TField("turn", TType.STRUCT, 4)
+  val TurnFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]]
 
   /**
    * Field information in declaration order.
    */
   lazy val fieldInfos: scala.List[ThriftStructFieldInfo] = scala.List[ThriftStructFieldInfo](
+    new ThriftStructFieldInfo(
+      CodeField,
+      false,
+      false,
+      CodeFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
     new ThriftStructFieldInfo(
       MemberIdField,
       false,
@@ -49,30 +59,20 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      FingerPrintField,
+      ReconnectField,
       false,
       false,
-      FingerPrintFieldManifest,
+      ReconnectFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
       immutable$Map.empty[String, String],
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      IpField,
+      TurnField,
+      true,
       false,
-      false,
-      IpFieldManifest,
-      _root_.scala.None,
-      _root_.scala.None,
-      immutable$Map.empty[String, String],
-      immutable$Map.empty[String, String]
-    ),
-    new ThriftStructFieldInfo(
-      GameTypeField,
-      false,
-      false,
-      GameTypeFieldManifest,
+      TurnFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
       immutable$Map.empty[String, String],
@@ -86,43 +86,45 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
   /**
    * Checks that all required fields are non-null.
    */
-  def validate(_item: JoinGameRequest): Unit = {
+  def validate(_item: CheckGameStatusResponse): Unit = {
   }
 
-  def withoutPassthroughFields(original: JoinGameRequest): JoinGameRequest =
+  def withoutPassthroughFields(original: CheckGameStatusResponse): CheckGameStatusResponse =
     new Immutable(
+      code =
+        {
+          val field = original.code
+          field
+        },
       memberId =
         {
           val field = original.memberId
           field
         },
-      fingerPrint =
+      reconnect =
         {
-          val field = original.fingerPrint
+          val field = original.reconnect
           field
         },
-      ip =
+      turn =
         {
-          val field = original.ip
-          field
-        },
-      gameType =
-        {
-          val field = original.gameType
-          field
+          val field = original.turn
+          field.map { field =>
+            com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
+          }
         }
     )
 
-  override def encode(_item: JoinGameRequest, _oproto: TProtocol): Unit = {
+  override def encode(_item: CheckGameStatusResponse, _oproto: TProtocol): Unit = {
     _item.write(_oproto)
   }
 
-  private[this] def lazyDecode(_iprot: LazyTProtocol): JoinGameRequest = {
+  private[this] def lazyDecode(_iprot: LazyTProtocol): CheckGameStatusResponse = {
 
+    var codeOffset: Int = -1
     var memberId: Long = 0L
-    var fingerPrintOffset: Int = -1
-    var ip: Long = 0L
-    var gameTypeOffset: Int = -1
+    var reconnect: Boolean = false
+    var turn: Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = None
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -137,6 +139,20 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
         _field.id match {
           case 1 =>
             _field.`type` match {
+              case TType.STRING =>
+                codeOffset = _iprot.offsetSkipString
+    
+              case _actualType =>
+                val _expectedType = TType.STRING
+                throw new TProtocolException(
+                  "Received wrong type for field 'code' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 2 =>
+            _field.`type` match {
               case TType.I64 =>
     
                 memberId = readMemberIdValue(_iprot)
@@ -149,29 +165,15 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
                   )
                 )
             }
-          case 2 =>
-            _field.`type` match {
-              case TType.STRING =>
-                fingerPrintOffset = _iprot.offsetSkipString
-    
-              case _actualType =>
-                val _expectedType = TType.STRING
-                throw new TProtocolException(
-                  "Received wrong type for field 'fingerPrint' (expected=%s, actual=%s).".format(
-                    ttypeToString(_expectedType),
-                    ttypeToString(_actualType)
-                  )
-                )
-            }
           case 3 =>
             _field.`type` match {
-              case TType.I64 =>
+              case TType.BOOL =>
     
-                ip = readIpValue(_iprot)
+                reconnect = readReconnectValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.I64
+                val _expectedType = TType.BOOL
                 throw new TProtocolException(
-                  "Received wrong type for field 'ip' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'reconnect' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -179,13 +181,13 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
             }
           case 4 =>
             _field.`type` match {
-              case TType.STRING =>
-                gameTypeOffset = _iprot.offsetSkipString
+              case TType.STRUCT =>
     
+                turn = Some(readTurnValue(_iprot))
               case _actualType =>
-                val _expectedType = TType.STRING
+                val _expectedType = TType.STRUCT
                 throw new TProtocolException(
-                  "Received wrong type for field 'gameType' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'turn' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -206,10 +208,10 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
       _iprot.buffer,
       _start_offset,
       _iprot.offset,
+      codeOffset,
       memberId,
-      fingerPrintOffset,
-      ip,
-      gameTypeOffset,
+      reconnect,
+      turn,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -217,17 +219,17 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
     )
   }
 
-  override def decode(_iprot: TProtocol): JoinGameRequest =
+  override def decode(_iprot: TProtocol): CheckGameStatusResponse =
     _iprot match {
       case i: LazyTProtocol => lazyDecode(i)
       case i => eagerDecode(i)
     }
 
-  private[this] def eagerDecode(_iprot: TProtocol): JoinGameRequest = {
+  private[this] def eagerDecode(_iprot: TProtocol): CheckGameStatusResponse = {
+    var code: String = ""
     var memberId: Long = 0L
-    var fingerPrint: String = ""
-    var ip: Long = 0L
-    var gameType: String = ""
+    var reconnect: Boolean = false
+    var turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -240,6 +242,19 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
         _field.id match {
           case 1 =>
             _field.`type` match {
+              case TType.STRING =>
+                code = readCodeValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.STRING
+                throw new TProtocolException(
+                  "Received wrong type for field 'code' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 2 =>
+            _field.`type` match {
               case TType.I64 =>
                 memberId = readMemberIdValue(_iprot)
               case _actualType =>
@@ -251,27 +266,14 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
                   )
                 )
             }
-          case 2 =>
-            _field.`type` match {
-              case TType.STRING =>
-                fingerPrint = readFingerPrintValue(_iprot)
-              case _actualType =>
-                val _expectedType = TType.STRING
-                throw new TProtocolException(
-                  "Received wrong type for field 'fingerPrint' (expected=%s, actual=%s).".format(
-                    ttypeToString(_expectedType),
-                    ttypeToString(_actualType)
-                  )
-                )
-            }
           case 3 =>
             _field.`type` match {
-              case TType.I64 =>
-                ip = readIpValue(_iprot)
+              case TType.BOOL =>
+                reconnect = readReconnectValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.I64
+                val _expectedType = TType.BOOL
                 throw new TProtocolException(
-                  "Received wrong type for field 'ip' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'reconnect' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -279,12 +281,12 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
             }
           case 4 =>
             _field.`type` match {
-              case TType.STRING =>
-                gameType = readGameTypeValue(_iprot)
+              case TType.STRUCT =>
+                turn = _root_.scala.Some(readTurnValue(_iprot))
               case _actualType =>
-                val _expectedType = TType.STRING
+                val _expectedType = TType.STRUCT
                 throw new TProtocolException(
-                  "Received wrong type for field 'gameType' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'turn' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -301,10 +303,10 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
     _iprot.readStructEnd()
 
     new Immutable(
+      code,
       memberId,
-      fingerPrint,
-      ip,
-      gameType,
+      reconnect,
+      turn,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -313,20 +315,34 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
   }
 
   def apply(
+    code: String = "",
     memberId: Long = 0L,
-    fingerPrint: String = "",
-    ip: Long = 0L,
-    gameType: String = ""
-  ): JoinGameRequest =
+    reconnect: Boolean = false,
+    turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
+  ): CheckGameStatusResponse =
     new Immutable(
+      code,
       memberId,
-      fingerPrint,
-      ip,
-      gameType
+      reconnect,
+      turn
     )
 
-  def unapply(_item: JoinGameRequest): _root_.scala.Option[scala.Product4[Long, String, Long, String]] = _root_.scala.Some(_item)
+  def unapply(_item: CheckGameStatusResponse): _root_.scala.Option[scala.Product4[String, Long, Boolean, Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]]] = _root_.scala.Some(_item)
 
+
+  @inline private def readCodeValue(_iprot: TProtocol): String = {
+    _iprot.readString()
+  }
+
+  @inline private def writeCodeField(code_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(CodeField)
+    writeCodeValue(code_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeCodeValue(code_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeString(code_item)
+  }
 
   @inline private def readMemberIdValue(_iprot: TProtocol): Long = {
     _iprot.readI64()
@@ -342,77 +358,63 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
     _oprot.writeI64(memberId_item)
   }
 
-  @inline private def readFingerPrintValue(_iprot: TProtocol): String = {
-    _iprot.readString()
+  @inline private def readReconnectValue(_iprot: TProtocol): Boolean = {
+    _iprot.readBool()
   }
 
-  @inline private def writeFingerPrintField(fingerPrint_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(FingerPrintField)
-    writeFingerPrintValue(fingerPrint_item, _oprot)
+  @inline private def writeReconnectField(reconnect_item: Boolean, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(ReconnectField)
+    writeReconnectValue(reconnect_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeFingerPrintValue(fingerPrint_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(fingerPrint_item)
+  @inline private def writeReconnectValue(reconnect_item: Boolean, _oprot: TProtocol): Unit = {
+    _oprot.writeBool(reconnect_item)
   }
 
-  @inline private def readIpValue(_iprot: TProtocol): Long = {
-    _iprot.readI64()
+  @inline private def readTurnValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = {
+    com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.decode(_iprot)
   }
 
-  @inline private def writeIpField(ip_item: Long, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(IpField)
-    writeIpValue(ip_item, _oprot)
+  @inline private def writeTurnField(turn_item: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(TurnField)
+    writeTurnValue(turn_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeIpValue(ip_item: Long, _oprot: TProtocol): Unit = {
-    _oprot.writeI64(ip_item)
-  }
-
-  @inline private def readGameTypeValue(_iprot: TProtocol): String = {
-    _iprot.readString()
-  }
-
-  @inline private def writeGameTypeField(gameType_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(GameTypeField)
-    writeGameTypeValue(gameType_item, _oprot)
-    _oprot.writeFieldEnd()
-  }
-
-  @inline private def writeGameTypeValue(gameType_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(gameType_item)
+  @inline private def writeTurnValue(turn_item: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse, _oprot: TProtocol): Unit = {
+    turn_item.write(_oprot)
   }
 
 
-  object Immutable extends ThriftStructCodec3[JoinGameRequest] {
-    override def encode(_item: JoinGameRequest, _oproto: TProtocol): Unit = { _item.write(_oproto) }
-    override def decode(_iprot: TProtocol): JoinGameRequest = JoinGameRequest.decode(_iprot)
-    override lazy val metaData: ThriftStructMetaData[JoinGameRequest] = JoinGameRequest.metaData
+  object Immutable extends ThriftStructCodec3[CheckGameStatusResponse] {
+    override def encode(_item: CheckGameStatusResponse, _oproto: TProtocol): Unit = { _item.write(_oproto) }
+    override def decode(_iprot: TProtocol): CheckGameStatusResponse = CheckGameStatusResponse.decode(_iprot)
+    override lazy val metaData: ThriftStructMetaData[CheckGameStatusResponse] = CheckGameStatusResponse.metaData
   }
 
   /**
-   * The default read-only implementation of JoinGameRequest.  You typically should not need to
-   * directly reference this class; instead, use the JoinGameRequest.apply method to construct
+   * The default read-only implementation of CheckGameStatusResponse.  You typically should not need to
+   * directly reference this class; instead, use the CheckGameStatusResponse.apply method to construct
    * new instances.
    */
   class Immutable(
+      val code: String,
       val memberId: Long,
-      val fingerPrint: String,
-      val ip: Long,
-      val gameType: String,
+      val reconnect: Boolean,
+      val turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse],
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends JoinGameRequest {
+    extends CheckGameStatusResponse {
     def this(
+      code: String = "",
       memberId: Long = 0L,
-      fingerPrint: String = "",
-      ip: Long = 0L,
-      gameType: String = ""
+      reconnect: Boolean = false,
+      turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
     ) = this(
+      code,
       memberId,
-      fingerPrint,
-      ip,
-      gameType,
+      reconnect,
+      turn,
       Map.empty
     )
   }
@@ -426,12 +428,12 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
       _buf: Array[Byte],
       _start_offset: Int,
       _end_offset: Int,
+      codeOffset: Int,
       val memberId: Long,
-      fingerPrintOffset: Int,
-      val ip: Long,
-      gameTypeOffset: Int,
+      val reconnect: Boolean,
+      val turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse],
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends JoinGameRequest {
+    extends CheckGameStatusResponse {
 
     override def write(_oprot: TProtocol): Unit = {
       _oprot match {
@@ -440,17 +442,11 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
       }
     }
 
-    lazy val fingerPrint: String =
-      if (fingerPrintOffset == -1)
+    lazy val code: String =
+      if (codeOffset == -1)
         ""
       else {
-        _proto.decodeString(_buf, fingerPrintOffset)
-      }
-    lazy val gameType: String =
-      if (gameTypeOffset == -1)
-        ""
-      else {
-        _proto.decodeString(_buf, gameTypeOffset)
+        _proto.decodeString(_buf, codeOffset)
       }
 
     /**
@@ -468,38 +464,38 @@ object JoinGameRequest extends ThriftStructCodec3[JoinGameRequest] {
   }
 
   /**
-   * This Proxy trait allows you to extend the JoinGameRequest trait with additional state or
-   * behavior and implement the read-only methods from JoinGameRequest using an underlying
+   * This Proxy trait allows you to extend the CheckGameStatusResponse trait with additional state or
+   * behavior and implement the read-only methods from CheckGameStatusResponse using an underlying
    * instance.
    */
-  trait Proxy extends JoinGameRequest {
-    protected def _underlying_JoinGameRequest: JoinGameRequest
-    override def memberId: Long = _underlying_JoinGameRequest.memberId
-    override def fingerPrint: String = _underlying_JoinGameRequest.fingerPrint
-    override def ip: Long = _underlying_JoinGameRequest.ip
-    override def gameType: String = _underlying_JoinGameRequest.gameType
-    override def _passthroughFields = _underlying_JoinGameRequest._passthroughFields
+  trait Proxy extends CheckGameStatusResponse {
+    protected def _underlying_CheckGameStatusResponse: CheckGameStatusResponse
+    override def code: String = _underlying_CheckGameStatusResponse.code
+    override def memberId: Long = _underlying_CheckGameStatusResponse.memberId
+    override def reconnect: Boolean = _underlying_CheckGameStatusResponse.reconnect
+    override def turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _underlying_CheckGameStatusResponse.turn
+    override def _passthroughFields = _underlying_CheckGameStatusResponse._passthroughFields
   }
 }
 
-trait JoinGameRequest
+trait CheckGameStatusResponse
   extends ThriftStruct
-  with scala.Product4[Long, String, Long, String]
+  with scala.Product4[String, Long, Boolean, Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]]
   with java.io.Serializable
 {
-  import JoinGameRequest._
+  import CheckGameStatusResponse._
 
+  def code: String
   def memberId: Long
-  def fingerPrint: String
-  def ip: Long
-  def gameType: String
+  def reconnect: Boolean
+  def turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
-  def _1 = memberId
-  def _2 = fingerPrint
-  def _3 = ip
-  def _4 = gameType
+  def _1 = code
+  def _2 = memberId
+  def _3 = reconnect
+  def _4 = turn
 
 
   /**
@@ -516,30 +512,30 @@ trait JoinGameRequest
         val _fieldOpt: _root_.scala.Option[TField] =
           _fieldId match {
             case 1 =>
-              if (true) {
-                writeMemberIdValue(memberId, _oprot)
-                _root_.scala.Some(JoinGameRequest.MemberIdField)
+              if (code ne null) {
+                writeCodeValue(code, _oprot)
+                _root_.scala.Some(CheckGameStatusResponse.CodeField)
               } else {
                 _root_.scala.None
               }
             case 2 =>
-              if (fingerPrint ne null) {
-                writeFingerPrintValue(fingerPrint, _oprot)
-                _root_.scala.Some(JoinGameRequest.FingerPrintField)
+              if (true) {
+                writeMemberIdValue(memberId, _oprot)
+                _root_.scala.Some(CheckGameStatusResponse.MemberIdField)
               } else {
                 _root_.scala.None
               }
             case 3 =>
               if (true) {
-                writeIpValue(ip, _oprot)
-                _root_.scala.Some(JoinGameRequest.IpField)
+                writeReconnectValue(reconnect, _oprot)
+                _root_.scala.Some(CheckGameStatusResponse.ReconnectField)
               } else {
                 _root_.scala.None
               }
             case 4 =>
-              if (gameType ne null) {
-                writeGameTypeValue(gameType, _oprot)
-                _root_.scala.Some(JoinGameRequest.GameTypeField)
+              if (turn.isDefined) {
+                writeTurnValue(turn.get, _oprot)
+                _root_.scala.Some(CheckGameStatusResponse.TurnField)
               } else {
                 _root_.scala.None
               }
@@ -568,28 +564,28 @@ trait JoinGameRequest
    * is unknown and passthrough fields are enabled, then the blob will be stored in
    * _passthroughFields.
    */
-  def setField(_blob: TFieldBlob): JoinGameRequest = {
+  def setField(_blob: TFieldBlob): CheckGameStatusResponse = {
+    var code: String = this.code
     var memberId: Long = this.memberId
-    var fingerPrint: String = this.fingerPrint
-    var ip: Long = this.ip
-    var gameType: String = this.gameType
+    var reconnect: Boolean = this.reconnect
+    var turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
-        memberId = readMemberIdValue(_blob.read)
+        code = readCodeValue(_blob.read)
       case 2 =>
-        fingerPrint = readFingerPrintValue(_blob.read)
+        memberId = readMemberIdValue(_blob.read)
       case 3 =>
-        ip = readIpValue(_blob.read)
+        reconnect = readReconnectValue(_blob.read)
       case 4 =>
-        gameType = readGameTypeValue(_blob.read)
+        turn = _root_.scala.Some(readTurnValue(_blob.read))
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
+      code,
       memberId,
-      fingerPrint,
-      ip,
-      gameType,
+      reconnect,
+      turn,
       _passthroughFields
     )
   }
@@ -599,28 +595,28 @@ trait JoinGameRequest
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetField(_fieldId: Short): JoinGameRequest = {
+  def unsetField(_fieldId: Short): CheckGameStatusResponse = {
+    var code: String = this.code
     var memberId: Long = this.memberId
-    var fingerPrint: String = this.fingerPrint
-    var ip: Long = this.ip
-    var gameType: String = this.gameType
+    var reconnect: Boolean = this.reconnect
+    var turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn
 
     _fieldId match {
       case 1 =>
-        memberId = 0L
+        code = ""
       case 2 =>
-        fingerPrint = ""
+        memberId = 0L
       case 3 =>
-        ip = 0L
+        reconnect = false
       case 4 =>
-        gameType = ""
+        turn = _root_.scala.None
       case _ =>
     }
     new Immutable(
+      code,
       memberId,
-      fingerPrint,
-      ip,
-      gameType,
+      reconnect,
+      turn,
       _passthroughFields - _fieldId
     )
   }
@@ -630,22 +626,22 @@ trait JoinGameRequest
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetMemberId: JoinGameRequest = unsetField(1)
+  def unsetCode: CheckGameStatusResponse = unsetField(1)
 
-  def unsetFingerPrint: JoinGameRequest = unsetField(2)
+  def unsetMemberId: CheckGameStatusResponse = unsetField(2)
 
-  def unsetIp: JoinGameRequest = unsetField(3)
+  def unsetReconnect: CheckGameStatusResponse = unsetField(3)
 
-  def unsetGameType: JoinGameRequest = unsetField(4)
+  def unsetTurn: CheckGameStatusResponse = unsetField(4)
 
 
   override def write(_oprot: TProtocol): Unit = {
-    JoinGameRequest.validate(this)
+    CheckGameStatusResponse.validate(this)
     _oprot.writeStructBegin(Struct)
+    if (code ne null) writeCodeField(code, _oprot)
     writeMemberIdField(memberId, _oprot)
-    if (fingerPrint ne null) writeFingerPrintField(fingerPrint, _oprot)
-    writeIpField(ip, _oprot)
-    if (gameType ne null) writeGameTypeField(gameType, _oprot)
+    writeReconnectField(reconnect, _oprot)
+    if (turn.isDefined) writeTurnField(turn.get, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -654,26 +650,26 @@ trait JoinGameRequest
   }
 
   def copy(
+    code: String = this.code,
     memberId: Long = this.memberId,
-    fingerPrint: String = this.fingerPrint,
-    ip: Long = this.ip,
-    gameType: String = this.gameType,
+    reconnect: Boolean = this.reconnect,
+    turn: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
-  ): JoinGameRequest =
+  ): CheckGameStatusResponse =
     new Immutable(
+      code,
       memberId,
-      fingerPrint,
-      ip,
-      gameType,
+      reconnect,
+      turn,
       _passthroughFields
     )
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[JoinGameRequest]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CheckGameStatusResponse]
 
   override def equals(other: Any): Boolean =
     canEqual(other) &&
       _root_.scala.runtime.ScalaRunTime._equals(this, other) &&
-      _passthroughFields == other.asInstanceOf[JoinGameRequest]._passthroughFields
+      _passthroughFields == other.asInstanceOf[CheckGameStatusResponse]._passthroughFields
 
   override def hashCode: Int = _root_.scala.runtime.ScalaRunTime._hashCode(this)
 
@@ -683,12 +679,12 @@ trait JoinGameRequest
   override def productArity: Int = 4
 
   override def productElement(n: Int): Any = n match {
-    case 0 => this.memberId
-    case 1 => this.fingerPrint
-    case 2 => this.ip
-    case 3 => this.gameType
+    case 0 => this.code
+    case 1 => this.memberId
+    case 2 => this.reconnect
+    case 3 => this.turn
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 
-  override def productPrefix: String = "JoinGameRequest"
+  override def productPrefix: String = "CheckGameStatusResponse"
 }
