@@ -52,29 +52,16 @@ class GameEndpointImpl @Inject()(gameService: GameService) extends GameEndpoint[
     }
   }
 
-  override def setGameStatus(traceId: String, memberId: Long, gameStatus: String): Future[GameBaseResponse] = {
+  override def generateSocketId(traceId: String): Future[GenerateSocketIdResponse] = {
     try {
-      Future.value(gameService.setGameStatus(traceId, memberId, gameStatus))
+      Future.value(gameService.generateSocketId(traceId))
     } catch {
       case ex: ServiceException =>
         logger.error(traceId, ex)
-        Future.value(GameBaseResponse(code = ex.getErrorCode.getCode))
+        Future.value(GenerateSocketIdResponse(code = ex.getErrorCode.getCode))
       case ex: Exception =>
         logger.error(traceId, ex)
-        Future.value(GameBaseResponse(code = ErrorCode.EC_SYSTEM_ERROR.getCode))
-    }
-  }
-
-  override def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String = "rpc"): Future[GameBaseResponse] = {
-    try {
-      Future.value(gameService.saveChannelAddress(traceId, memberId, host, addressType))
-    } catch {
-      case ex: ServiceException =>
-        logger.error(traceId, ex)
-        Future.value(GameBaseResponse(code = ex.getErrorCode.getCode))
-      case ex: Exception =>
-        logger.error(traceId, ex)
-        Future.value(GameBaseResponse(code = ErrorCode.EC_SYSTEM_ERROR.getCode))
+        Future.value(GenerateSocketIdResponse(code = ErrorCode.EC_SYSTEM_ERROR.getCode))
     }
   }
 
@@ -91,7 +78,7 @@ class GameEndpointImpl @Inject()(gameService: GameService) extends GameEndpoint[
     }
   }
 
-  override def playerOffline(traceId: String, socketUuid: String, memberId: Long): Future[GameBaseResponse] = {
+  override def playerOffline(traceId: String, socketUuid: Long, memberId: Long): Future[GameBaseResponse] = {
     try {
       Future.value(gameService.playerOffline(traceId, socketUuid, memberId))
     } catch {

@@ -156,7 +156,7 @@ class GameEndpoint$FinagleClient(
     val FailuresScope = scopedStats.scope("playerOffline").scope("failures")
   }
   
-  def playerOffline(traceId: String, socketUuid: String, memberId: Long): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
+  def playerOffline(traceId: String, socketUuid: Long, memberId: Long): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
     __stats_playerOffline.RequestsCounter.incr()
     val inputArgs = PlayerOffline.Args(traceId, socketUuid, memberId)
     val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
@@ -200,19 +200,19 @@ class GameEndpoint$FinagleClient(
       }
     }
   }
-  private[this] object __stats_saveChannelAddress {
-    val RequestsCounter = scopedStats.scope("saveChannelAddress").counter("requests")
-    val SuccessCounter = scopedStats.scope("saveChannelAddress").counter("success")
-    val FailuresCounter = scopedStats.scope("saveChannelAddress").counter("failures")
-    val FailuresScope = scopedStats.scope("saveChannelAddress").scope("failures")
+  private[this] object __stats_generateSocketId {
+    val RequestsCounter = scopedStats.scope("generateSocketId").counter("requests")
+    val SuccessCounter = scopedStats.scope("generateSocketId").counter("success")
+    val FailuresCounter = scopedStats.scope("generateSocketId").counter("failures")
+    val FailuresScope = scopedStats.scope("generateSocketId").scope("failures")
   }
   
-  def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String = "rpc"): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
-    __stats_saveChannelAddress.RequestsCounter.incr()
-    val inputArgs = SaveChannelAddress.Args(traceId, memberId, host, addressType)
-    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
+  def generateSocketId(traceId: String): Future[com.jxjxgo.gamecenter.rpc.domain.GenerateSocketIdResponse] = {
+    __stats_generateSocketId.RequestsCounter.incr()
+    val inputArgs = GenerateSocketId.Args(traceId)
+    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GenerateSocketIdResponse] =
       response => {
-        val result = decodeResponse(response, SaveChannelAddress.Result)
+        val result = decodeResponse(response, GenerateSocketId.Result)
         val exception: Throwable =
         null
   
@@ -221,15 +221,15 @@ class GameEndpoint$FinagleClient(
         else if (exception != null)
           _root_.com.twitter.util.Throw(exception)
         else
-          _root_.com.twitter.util.Throw(missingResult("saveChannelAddress"))
+          _root_.com.twitter.util.Throw(missingResult("generateSocketId"))
       }
   
-    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse](inputArgs, replyDeserializer)
+    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.GenerateSocketIdResponse](inputArgs, replyDeserializer)
     _root_.com.twitter.finagle.context.Contexts.local.let(
       _root_.com.twitter.finagle.thrift.DeserializeCtx.Key,
       serdeCtx
     ) {
-      val serialized = encodeRequest("saveChannelAddress", inputArgs)
+      val serialized = encodeRequest("generateSocketId", inputArgs)
       this.service(serialized).flatMap { response =>
         Future.const(serdeCtx.deserialize(response))
       }.respond { response =>
@@ -238,13 +238,13 @@ class GameEndpoint$FinagleClient(
           ctfs.ResponseClassifier.Default)
         responseClass match {
           case ctfs.ResponseClass.Successful(_) =>
-            __stats_saveChannelAddress.SuccessCounter.incr()
+            __stats_generateSocketId.SuccessCounter.incr()
           case ctfs.ResponseClass.Failed(_) =>
-            __stats_saveChannelAddress.FailuresCounter.incr()
+            __stats_generateSocketId.FailuresCounter.incr()
             response match {
               case Throw(ex) =>
                 setServiceName(ex)
-                __stats_saveChannelAddress.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+                __stats_generateSocketId.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
               case _ =>
             }
         }
@@ -398,57 +398,6 @@ class GameEndpoint$FinagleClient(
               case Throw(ex) =>
                 setServiceName(ex)
                 __stats_playCards.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
-              case _ =>
-            }
-        }
-      }
-    }
-  }
-  private[this] object __stats_setGameStatus {
-    val RequestsCounter = scopedStats.scope("setGameStatus").counter("requests")
-    val SuccessCounter = scopedStats.scope("setGameStatus").counter("success")
-    val FailuresCounter = scopedStats.scope("setGameStatus").counter("failures")
-    val FailuresScope = scopedStats.scope("setGameStatus").scope("failures")
-  }
-  
-  def setGameStatus(traceId: String, memberId: Long, gameStatus: String): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
-    __stats_setGameStatus.RequestsCounter.incr()
-    val inputArgs = SetGameStatus.Args(traceId, memberId, gameStatus)
-    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
-      response => {
-        val result = decodeResponse(response, SetGameStatus.Result)
-        val exception: Throwable =
-        null
-  
-        if (result.success.isDefined)
-          _root_.com.twitter.util.Return(result.success.get)
-        else if (exception != null)
-          _root_.com.twitter.util.Throw(exception)
-        else
-          _root_.com.twitter.util.Throw(missingResult("setGameStatus"))
-      }
-  
-    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse](inputArgs, replyDeserializer)
-    _root_.com.twitter.finagle.context.Contexts.local.let(
-      _root_.com.twitter.finagle.thrift.DeserializeCtx.Key,
-      serdeCtx
-    ) {
-      val serialized = encodeRequest("setGameStatus", inputArgs)
-      this.service(serialized).flatMap { response =>
-        Future.const(serdeCtx.deserialize(response))
-      }.respond { response =>
-        val responseClass = responseClassifier.applyOrElse(
-          ctfs.ReqRep(inputArgs, response),
-          ctfs.ResponseClassifier.Default)
-        responseClass match {
-          case ctfs.ResponseClass.Successful(_) =>
-            __stats_setGameStatus.SuccessCounter.incr()
-          case ctfs.ResponseClass.Failed(_) =>
-            __stats_setGameStatus.FailuresCounter.incr()
-            response match {
-              case Throw(ex) =>
-                setServiceName(ex)
-                __stats_setGameStatus.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
               case _ =>
             }
         }

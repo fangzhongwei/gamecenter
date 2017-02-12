@@ -25,8 +25,8 @@ import scala.collection.{Map, Set}
 object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
   private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
   val Struct = new TStruct("OnlineRequest")
-  val SocketUuidField = new TField("socketUuid", TType.STRING, 1)
-  val SocketUuidFieldManifest = implicitly[Manifest[String]]
+  val SocketUuidField = new TField("socketUuid", TType.I64, 1)
+  val SocketUuidFieldManifest = implicitly[Manifest[Long]]
   val MemberIdField = new TField("memberId", TType.I64, 2)
   val MemberIdFieldManifest = implicitly[Manifest[Long]]
   val IpField = new TField("ip", TType.I64, 3)
@@ -153,7 +153,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
 
   private[this] def lazyDecode(_iprot: LazyTProtocol): OnlineRequest = {
 
-    var socketUuidOffset: Int = -1
+    var socketUuid: Long = 0L
     var memberId: Long = 0L
     var ip: Long = 0L
     var deviceType: Int = 0
@@ -173,11 +173,11 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
         _field.id match {
           case 1 =>
             _field.`type` match {
-              case TType.STRING =>
-                socketUuidOffset = _iprot.offsetSkipString
+              case TType.I64 =>
     
+                socketUuid = readSocketUuidValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.STRING
+                val _expectedType = TType.I64
                 throw new TProtocolException(
                   "Received wrong type for field 'socketUuid' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
@@ -270,7 +270,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
       _iprot.buffer,
       _start_offset,
       _iprot.offset,
-      socketUuidOffset,
+      socketUuid,
       memberId,
       ip,
       deviceType,
@@ -290,7 +290,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
     }
 
   private[this] def eagerDecode(_iprot: TProtocol): OnlineRequest = {
-    var socketUuid: String = null
+    var socketUuid: Long = 0L
     var memberId: Long = 0L
     var ip: Long = 0L
     var deviceType: Int = 0
@@ -308,10 +308,10 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
         _field.id match {
           case 1 =>
             _field.`type` match {
-              case TType.STRING =>
+              case TType.I64 =>
                 socketUuid = readSocketUuidValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.STRING
+                val _expectedType = TType.I64
                 throw new TProtocolException(
                   "Received wrong type for field 'socketUuid' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
@@ -409,7 +409,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
   }
 
   def apply(
-    socketUuid: String,
+    socketUuid: Long,
     memberId: Long,
     ip: Long,
     deviceType: Int,
@@ -425,21 +425,21 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
       host
     )
 
-  def unapply(_item: OnlineRequest): _root_.scala.Option[scala.Product6[String, Long, Long, Int, String, String]] = _root_.scala.Some(_item)
+  def unapply(_item: OnlineRequest): _root_.scala.Option[scala.Product6[Long, Long, Long, Int, String, String]] = _root_.scala.Some(_item)
 
 
-  @inline private def readSocketUuidValue(_iprot: TProtocol): String = {
-    _iprot.readString()
+  @inline private def readSocketUuidValue(_iprot: TProtocol): Long = {
+    _iprot.readI64()
   }
 
-  @inline private def writeSocketUuidField(socketUuid_item: String, _oprot: TProtocol): Unit = {
+  @inline private def writeSocketUuidField(socketUuid_item: Long, _oprot: TProtocol): Unit = {
     _oprot.writeFieldBegin(SocketUuidField)
     writeSocketUuidValue(socketUuid_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeSocketUuidValue(socketUuid_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(socketUuid_item)
+  @inline private def writeSocketUuidValue(socketUuid_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeI64(socketUuid_item)
   }
 
   @inline private def readMemberIdValue(_iprot: TProtocol): Long = {
@@ -525,7 +525,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
    * new instances.
    */
   class Immutable(
-      val socketUuid: String,
+      val socketUuid: Long,
       val memberId: Long,
       val ip: Long,
       val deviceType: Int,
@@ -534,7 +534,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends OnlineRequest {
     def this(
-      socketUuid: String,
+      socketUuid: Long,
       memberId: Long,
       ip: Long,
       deviceType: Int,
@@ -560,7 +560,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
       _buf: Array[Byte],
       _start_offset: Int,
       _end_offset: Int,
-      socketUuidOffset: Int,
+      val socketUuid: Long,
       val memberId: Long,
       val ip: Long,
       val deviceType: Int,
@@ -576,12 +576,6 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
       }
     }
 
-    lazy val socketUuid: String =
-      if (socketUuidOffset == -1)
-        null
-      else {
-        _proto.decodeString(_buf, socketUuidOffset)
-      }
     lazy val fingerPrint: String =
       if (fingerPrintOffset == -1)
         null
@@ -616,7 +610,7 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
    */
   trait Proxy extends OnlineRequest {
     protected def _underlying_OnlineRequest: OnlineRequest
-    override def socketUuid: String = _underlying_OnlineRequest.socketUuid
+    override def socketUuid: Long = _underlying_OnlineRequest.socketUuid
     override def memberId: Long = _underlying_OnlineRequest.memberId
     override def ip: Long = _underlying_OnlineRequest.ip
     override def deviceType: Int = _underlying_OnlineRequest.deviceType
@@ -628,12 +622,12 @@ object OnlineRequest extends ThriftStructCodec3[OnlineRequest] {
 
 trait OnlineRequest
   extends ThriftStruct
-  with scala.Product6[String, Long, Long, Int, String, String]
+  with scala.Product6[Long, Long, Long, Int, String, String]
   with java.io.Serializable
 {
   import OnlineRequest._
 
-  def socketUuid: String
+  def socketUuid: Long
   def memberId: Long
   def ip: Long
   def deviceType: Int
@@ -664,7 +658,7 @@ trait OnlineRequest
         val _fieldOpt: _root_.scala.Option[TField] =
           _fieldId match {
             case 1 =>
-              if (socketUuid ne null) {
+              if (true) {
                 writeSocketUuidValue(socketUuid, _oprot)
                 _root_.scala.Some(OnlineRequest.SocketUuidField)
               } else {
@@ -731,7 +725,7 @@ trait OnlineRequest
    * _passthroughFields.
    */
   def setField(_blob: TFieldBlob): OnlineRequest = {
-    var socketUuid: String = this.socketUuid
+    var socketUuid: Long = this.socketUuid
     var memberId: Long = this.memberId
     var ip: Long = this.ip
     var deviceType: Int = this.deviceType
@@ -770,7 +764,7 @@ trait OnlineRequest
    * from the passthroughFields map, if present.
    */
   def unsetField(_fieldId: Short): OnlineRequest = {
-    var socketUuid: String = this.socketUuid
+    var socketUuid: Long = this.socketUuid
     var memberId: Long = this.memberId
     var ip: Long = this.ip
     var deviceType: Int = this.deviceType
@@ -779,7 +773,7 @@ trait OnlineRequest
 
     _fieldId match {
       case 1 =>
-        socketUuid = null
+        socketUuid = 0L
       case 2 =>
         memberId = 0L
       case 3 =>
@@ -824,7 +818,7 @@ trait OnlineRequest
   override def write(_oprot: TProtocol): Unit = {
     OnlineRequest.validate(this)
     _oprot.writeStructBegin(Struct)
-    if (socketUuid ne null) writeSocketUuidField(socketUuid, _oprot)
+    writeSocketUuidField(socketUuid, _oprot)
     writeMemberIdField(memberId, _oprot)
     writeIpField(ip, _oprot)
     writeDeviceTypeField(deviceType, _oprot)
@@ -838,7 +832,7 @@ trait OnlineRequest
   }
 
   def copy(
-    socketUuid: String = this.socketUuid,
+    socketUuid: Long = this.socketUuid,
     memberId: Long = this.memberId,
     ip: Long = this.ip,
     deviceType: Int = this.deviceType,

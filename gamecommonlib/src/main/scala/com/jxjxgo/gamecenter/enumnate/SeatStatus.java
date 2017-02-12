@@ -5,7 +5,8 @@ package com.jxjxgo.gamecenter.enumnate;
  */
 public enum SeatStatus {
     Idle(0, "Idle"),
-    Dropped(-1, "Dropped"),//掉线
+    WaitingStart(1, "WaitingStart"),
+    Dropped(-1, "Dropped"),
     Playing(99, "Playing");
 
     private int code;
@@ -30,6 +31,13 @@ public enum SeatStatus {
 
     public void setDesc(String desc) {
         this.desc = desc;
+    }
+
+    public static SeatStatus get(short code) {
+        for (SeatStatus status: SeatStatus.values()) {
+            if (status.getCode() == code) return status;
+        }
+        return null;
     }
 
     @Override

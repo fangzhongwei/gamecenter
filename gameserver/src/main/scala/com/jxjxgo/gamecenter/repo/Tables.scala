@@ -10,80 +10,50 @@ trait Tables extends DBImpl {
   // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
   import slick.jdbc.{GetResult => GR}
 
-
-  /** Entity class storing rows of table TmChannelAddress
-    *
-    * @param memberId  Database column member_id SqlType(int8), PrimaryKey
-    * @param host      Database column host SqlType(varchar), Length(32,true)
-    * @param `type`    Database column type SqlType(varchar), Length(255,true), Default(rpc)
-    * @param gmtCreate Database column gmt_create SqlType(timestamp)
-    * @param gmtUpdate Database column gmt_update SqlType(timestamp) */
-  case class TmChannelAddressRow(memberId: Long, host: String, `type`: String = "rpc", gmtCreate: java.sql.Timestamp, gmtUpdate: java.sql.Timestamp)
-
-  /** GetResult implicit for fetching TmChannelAddressRow objects using plain SQL queries */
-  implicit def GetResultTmChannelAddressRow(implicit e0: GR[Long], e1: GR[String], e2: GR[java.sql.Timestamp]): GR[TmChannelAddressRow] = GR {
-    prs => import prs._
-      TmChannelAddressRow.tupled((<<[Long], <<[String], <<[String], <<[java.sql.Timestamp], <<[java.sql.Timestamp]))
-  }
-
-  /** Table description of table tm_channel_address. Objects of this class serve as prototypes for rows in queries.
-    * NOTE: The following names collided with Scala keywords and were escaped: type */
-  class TmChannelAddress(_tableTag: Tag) extends profile.api.Table[TmChannelAddressRow](_tableTag, "tm_channel_address") {
-    def * = (memberId, host, `type`, gmtCreate, gmtUpdate) <> (TmChannelAddressRow.tupled, TmChannelAddressRow.unapply)
-
-    /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(memberId), Rep.Some(host), Rep.Some(`type`), Rep.Some(gmtCreate), Rep.Some(gmtUpdate)).shaped.<>({ r => import r._; _1.map(_ => TmChannelAddressRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
-
-    /** Database column member_id SqlType(int8), PrimaryKey */
-    val memberId: Rep[Long] = column[Long]("member_id", O.PrimaryKey)
-    /** Database column host SqlType(varchar), Length(32,true) */
-    val host: Rep[String] = column[String]("host", O.Length(32, varying = true))
-    /** Database column type SqlType(varchar), Length(255,true), Default(rpc)
-      * NOTE: The name was escaped because it collided with a Scala keyword. */
-    val `type`: Rep[String] = column[String]("type", O.Length(255, varying = true), O.Default("rpc"))
-    /** Database column gmt_create SqlType(timestamp) */
-    val gmtCreate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_create")
-    /** Database column gmt_update SqlType(timestamp) */
-    val gmtUpdate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_update")
-  }
-
-  /** Collection-like TableQuery object for table TmChannelAddress */
-  lazy val TmChannelAddress = new TableQuery(tag => new TmChannelAddress(tag))
-
   /** Entity class storing rows of table TmGame
     *
     * @param id           Database column id SqlType(int8), PrimaryKey
     * @param gameType     Database column game_type SqlType(int4), Default(0)
+    * @param deviceType   Database column device_type SqlType(int4)
+    * @param baseAmount   Database column base_amount SqlType(int4)
+    * @param multiples    Database column multiples SqlType(int4)
     * @param status       Database column status SqlType(int2)
     * @param player1Id    Database column player1_id SqlType(int8), Default(0)
     * @param player2Id    Database column player2_id SqlType(int8), Default(0)
     * @param player3Id    Database column player3_id SqlType(int8), Default(0)
-    * @param player1Cards Database column player1_cards SqlType(varchar), Length(60,true), Default()
-    * @param player2Cards Database column player2_cards SqlType(varchar), Length(60,true), Default()
-    * @param player3Cards Database column player3_cards SqlType(varchar), Length(60,true), Default()
-    * @param dzCards      Database column dz_cards SqlType(varchar), Length(11,true), Default()
-    * @param dzIdx        Database column dz_idx SqlType(int2)
+    * @param player1Cards Database column player1_cards SqlType(varchar), Length(81,true), Default()
+    * @param player2Cards Database column player2_cards SqlType(varchar), Length(81,true), Default()
+    * @param player3Cards Database column player3_cards SqlType(varchar), Length(81,true), Default()
+    * @param dzCards      Database column dz_cards SqlType(varchar), Length(13,true), Default()
+    * @param landlordIdx  Database column landlord_idx SqlType(int4)
+    * @param winnerIdx    Database column winner_idx SqlType(int4)
     * @param gmtCreate    Database column gmt_create SqlType(timestamp)
     * @param gmtUpdate    Database column gmt_update SqlType(timestamp) */
-  case class TmGameRow(id: Long, gameType: Int = 0, status: Short, player1Id: Long = 0L, player2Id: Long = 0L, player3Id: Long = 0L, player1Cards: String = "", player2Cards: String = "", player3Cards: String = "", dzCards: String = "", dzIdx: Short, gmtCreate: java.sql.Timestamp, gmtUpdate: java.sql.Timestamp)
+  case class TmGameRow(id: Long, gameType: Int = 0, deviceType: Int, baseAmount: Int, multiples: Int, status: Short, player1Id: Long = 0L, player2Id: Long = 0L, player3Id: Long = 0L, player1Cards: String = "", player2Cards: String = "", player3Cards: String = "", dzCards: String = "", landlordIdx: Int, winnerIdx: Int, gmtCreate: java.sql.Timestamp, gmtUpdate: java.sql.Timestamp)
 
   /** GetResult implicit for fetching TmGameRow objects using plain SQL queries */
   implicit def GetResultTmGameRow(implicit e0: GR[Long], e1: GR[Int], e2: GR[Short], e3: GR[String], e4: GR[java.sql.Timestamp]): GR[TmGameRow] = GR {
     prs => import prs._
-      TmGameRow.tupled((<<[Long], <<[Int], <<[Short], <<[Long], <<[Long], <<[Long], <<[String], <<[String], <<[String], <<[String], <<[Short], <<[java.sql.Timestamp], <<[java.sql.Timestamp]))
+      TmGameRow.tupled((<<[Long], <<[Int], <<[Int], <<[Int], <<[Int], <<[Short], <<[Long], <<[Long], <<[Long], <<[String], <<[String], <<[String], <<[String], <<[Int], <<[Int], <<[java.sql.Timestamp], <<[java.sql.Timestamp]))
   }
 
   /** Table description of table tm_game. Objects of this class serve as prototypes for rows in queries. */
   class TmGame(_tableTag: Tag) extends profile.api.Table[TmGameRow](_tableTag, "tm_game") {
-    def * = (id, gameType, status, player1Id, player2Id, player3Id, player1Cards, player2Cards, player3Cards, dzCards, dzIdx, gmtCreate, gmtUpdate) <> (TmGameRow.tupled, TmGameRow.unapply)
+    def * = (id, gameType, deviceType, baseAmount, multiples, status, player1Id, player2Id, player3Id, player1Cards, player2Cards, player3Cards, dzCards, landlordIdx, winnerIdx, gmtCreate, gmtUpdate) <> (TmGameRow.tupled, TmGameRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(gameType), Rep.Some(status), Rep.Some(player1Id), Rep.Some(player2Id), Rep.Some(player3Id), Rep.Some(player1Cards), Rep.Some(player2Cards), Rep.Some(player3Cards), Rep.Some(dzCards), Rep.Some(dzIdx), Rep.Some(gmtCreate), Rep.Some(gmtUpdate)).shaped.<>({ r => import r._; _1.map(_ => TmGameRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8.get, _9.get, _10.get, _11.get, _12.get, _13.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(gameType), Rep.Some(deviceType), Rep.Some(baseAmount), Rep.Some(multiples), Rep.Some(status), Rep.Some(player1Id), Rep.Some(player2Id), Rep.Some(player3Id), Rep.Some(player1Cards), Rep.Some(player2Cards), Rep.Some(player3Cards), Rep.Some(dzCards), Rep.Some(landlordIdx), Rep.Some(winnerIdx), Rep.Some(gmtCreate), Rep.Some(gmtUpdate)).shaped.<>({ r => import r._; _1.map(_ => TmGameRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8.get, _9.get, _10.get, _11.get, _12.get, _13.get, _14.get, _15.get, _16.get, _17.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(int8), PrimaryKey */
     val id: Rep[Long] = column[Long]("id", O.PrimaryKey)
     /** Database column game_type SqlType(int4), Default(0) */
     val gameType: Rep[Int] = column[Int]("game_type", O.Default(0))
+    /** Database column device_type SqlType(int4) */
+    val deviceType: Rep[Int] = column[Int]("device_type")
+    /** Database column base_amount SqlType(int4) */
+    val baseAmount: Rep[Int] = column[Int]("base_amount")
+    /** Database column multiples SqlType(int4) */
+    val multiples: Rep[Int] = column[Int]("multiples")
     /** Database column status SqlType(int2) */
     val status: Rep[Short] = column[Short]("status")
     /** Database column player1_id SqlType(int8), Default(0) */
@@ -92,16 +62,18 @@ trait Tables extends DBImpl {
     val player2Id: Rep[Long] = column[Long]("player2_id", O.Default(0L))
     /** Database column player3_id SqlType(int8), Default(0) */
     val player3Id: Rep[Long] = column[Long]("player3_id", O.Default(0L))
-    /** Database column player1_cards SqlType(varchar), Length(60,true), Default() */
-    val player1Cards: Rep[String] = column[String]("player1_cards", O.Length(60, varying = true), O.Default(""))
-    /** Database column player2_cards SqlType(varchar), Length(60,true), Default() */
-    val player2Cards: Rep[String] = column[String]("player2_cards", O.Length(60, varying = true), O.Default(""))
-    /** Database column player3_cards SqlType(varchar), Length(60,true), Default() */
-    val player3Cards: Rep[String] = column[String]("player3_cards", O.Length(60, varying = true), O.Default(""))
-    /** Database column dz_cards SqlType(varchar), Length(11,true), Default() */
-    val dzCards: Rep[String] = column[String]("dz_cards", O.Length(11, varying = true), O.Default(""))
-    /** Database column dz_idx SqlType(int2) */
-    val dzIdx: Rep[Short] = column[Short]("dz_idx")
+    /** Database column player1_cards SqlType(varchar), Length(81,true), Default() */
+    val player1Cards: Rep[String] = column[String]("player1_cards", O.Length(81, varying = true), O.Default(""))
+    /** Database column player2_cards SqlType(varchar), Length(81,true), Default() */
+    val player2Cards: Rep[String] = column[String]("player2_cards", O.Length(81, varying = true), O.Default(""))
+    /** Database column player3_cards SqlType(varchar), Length(81,true), Default() */
+    val player3Cards: Rep[String] = column[String]("player3_cards", O.Length(81, varying = true), O.Default(""))
+    /** Database column dz_cards SqlType(varchar), Length(13,true), Default() */
+    val dzCards: Rep[String] = column[String]("dz_cards", O.Length(13, varying = true), O.Default(""))
+    /** Database column landlord_idx SqlType(int4) */
+    val landlordIdx: Rep[Int] = column[Int]("landlord_idx")
+    /** Database column winner_idx SqlType(int4) */
+    val winnerIdx: Rep[Int] = column[Int]("winner_idx")
     /** Database column gmt_create SqlType(timestamp) */
     val gmtCreate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_create")
     /** Database column gmt_update SqlType(timestamp) */
@@ -113,7 +85,7 @@ trait Tables extends DBImpl {
 
   /** Entity class storing rows of table TmOnlineRecord
     *
-    * @param socketUuid  Database column socket_uuid SqlType(varchar), PrimaryKey, Length(32,true)
+    * @param socketId    Database column socket_id SqlType(int8), PrimaryKey
     * @param deviceType  Database column device_type SqlType(int4)
     * @param fingerPrint Database column finger_print SqlType(varchar), Length(64,true)
     * @param memberId    Database column member_id SqlType(int8)
@@ -122,23 +94,23 @@ trait Tables extends DBImpl {
     * @param gmtOnline   Database column gmt_online SqlType(timestamp)
     * @param gmtOffline  Database column gmt_offline SqlType(timestamp), Default(None)
     * @param online      Database column online SqlType(bool) */
-  case class TmOnlineRecordRow(socketUuid: String, deviceType: Int, fingerPrint: String, memberId: Long, ip: Long, rpcHost: String, gmtOnline: java.sql.Timestamp, gmtOffline: Option[java.sql.Timestamp] = None, online: Boolean)
+  case class TmOnlineRecordRow(socketId: Long, deviceType: Int, fingerPrint: String, memberId: Long, ip: Long, rpcHost: String, gmtOnline: java.sql.Timestamp, gmtOffline: Option[java.sql.Timestamp] = None, online: Boolean)
 
   /** GetResult implicit for fetching TmOnlineRecordRow objects using plain SQL queries */
-  implicit def GetResultTmOnlineRecordRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Long], e3: GR[java.sql.Timestamp], e4: GR[Option[java.sql.Timestamp]], e5: GR[Boolean]): GR[TmOnlineRecordRow] = GR {
+  implicit def GetResultTmOnlineRecordRow(implicit e0: GR[Long], e1: GR[Int], e2: GR[String], e3: GR[java.sql.Timestamp], e4: GR[Option[java.sql.Timestamp]], e5: GR[Boolean]): GR[TmOnlineRecordRow] = GR {
     prs => import prs._
-      TmOnlineRecordRow.tupled((<<[String], <<[Int], <<[String], <<[Long], <<[Long], <<[String], <<[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Boolean]))
+      TmOnlineRecordRow.tupled((<<[Long], <<[Int], <<[String], <<[Long], <<[Long], <<[String], <<[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Boolean]))
   }
 
   /** Table description of table tm_online_record. Objects of this class serve as prototypes for rows in queries. */
   class TmOnlineRecord(_tableTag: Tag) extends profile.api.Table[TmOnlineRecordRow](_tableTag, "tm_online_record") {
-    def * = (socketUuid, deviceType, fingerPrint, memberId, ip, rpcHost, gmtOnline, gmtOffline, online) <> (TmOnlineRecordRow.tupled, TmOnlineRecordRow.unapply)
+    def * = (socketId, deviceType, fingerPrint, memberId, ip, rpcHost, gmtOnline, gmtOffline, online) <> (TmOnlineRecordRow.tupled, TmOnlineRecordRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(socketUuid), Rep.Some(deviceType), Rep.Some(fingerPrint), Rep.Some(memberId), Rep.Some(ip), Rep.Some(rpcHost), Rep.Some(gmtOnline), gmtOffline, Rep.Some(online)).shaped.<>({ r => import r._; _1.map(_ => TmOnlineRecordRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8, _9.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(socketId), Rep.Some(deviceType), Rep.Some(fingerPrint), Rep.Some(memberId), Rep.Some(ip), Rep.Some(rpcHost), Rep.Some(gmtOnline), gmtOffline, Rep.Some(online)).shaped.<>({ r => import r._; _1.map(_ => TmOnlineRecordRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8, _9.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
 
-    /** Database column socket_uuid SqlType(varchar), PrimaryKey, Length(32,true) */
-    val socketUuid: Rep[String] = column[String]("socket_uuid", O.PrimaryKey, O.Length(32, varying = true))
+    /** Database column socket_id SqlType(int8), PrimaryKey */
+    val socketId: Rep[Long] = column[Long]("socket_id", O.PrimaryKey)
     /** Database column device_type SqlType(int4) */
     val deviceType: Rep[Int] = column[Int]("device_type")
     /** Database column finger_print SqlType(varchar), Length(64,true) */
@@ -306,62 +278,62 @@ trait Tables extends DBImpl {
   /** Entity class storing rows of table TmSeat
     *
     * @param id                 Database column id SqlType(int8), PrimaryKey
-    * @param traceId            Database column trace_id SqlType(varchar), Length(64,true)
+    * @param traceId            Database column trace_id SqlType(varchar), Length(32,true)
     * @param status             Database column status SqlType(int2)
     * @param memberId           Database column member_id SqlType(int8), Default(0)
-    * @param cards              Database column cards SqlType(varchar), Length(60,true)
-    * @param ip                 Database column ip SqlType(int8)
+    * @param cards              Database column cards SqlType(varchar), Length(81,true)
+    * @param landlordCards      Database column landlord_cards SqlType(varchar), Length(13,true)
     * @param fingerPrint        Database column finger_print SqlType(varchar), Length(64,true)
-    * @param gmtCreate          Database column gmt_create SqlType(timestamp)
-    * @param gmtUpdate          Database column gmt_update SqlType(timestamp)
     * @param gameId             Database column game_id SqlType(int8)
-    * @param gameType           Database column game_type SqlType(varchar), Length(32,true)
+    * @param gameType           Database column game_type SqlType(int4)
+    * @param deviceType         Database column device_type SqlType(int4)
     * @param multiples          Database column multiples SqlType(int4)
     * @param baseAmount         Database column base_amount SqlType(int4)
     * @param previousNickname   Database column previous_nickname SqlType(varchar), Length(64,true)
     * @param previousCardsCount Database column previous_cards_count SqlType(int2)
     * @param nextNickname       Database column next_nickname SqlType(varchar), Length(64,true)
     * @param nextCardsCount     Database column next_cards_count SqlType(int2)
-    * @param choosingLandlord   Database column choosing_landlord SqlType(bool)
-    * @param landlord           Database column landlord SqlType(bool)
-    * @param turnToPlay         Database column turn_to_play SqlType(bool) */
-  case class TmSeatRow(id: Long, traceId: String, status: Short, memberId: Long = 0L, cards: String, ip: Long, fingerPrint: String, gmtCreate: java.sql.Timestamp, gmtUpdate: java.sql.Timestamp, gameId: Long, gameType: String, multiples: Int, baseAmount: Int, previousNickname: String, previousCardsCount: Short, nextNickname: String, nextCardsCount: Short, choosingLandlord: Boolean, landlord: Boolean, turnToPlay: Boolean)
+    * @param choosingLandlord   Database column choosing_landlord SqlType(bool), Default(false)
+    * @param landlord           Database column landlord SqlType(bool), Default(false)
+    * @param turnToPlay         Database column turn_to_play SqlType(bool), Default(false)
+    * @param socketId           Database column socket_id SqlType(int8)
+    * @param gmtCreate          Database column gmt_create SqlType(timestamp)
+    * @param gmtUpdate          Database column gmt_update SqlType(timestamp) */
+  case class TmSeatRow(id: Long, traceId: String, status: Short, memberId: Long = 0L, cards: String, landlordCards: String, fingerPrint: String, gameId: Long, gameType: Int, deviceType: Int, multiples: Int, baseAmount: Int, previousNickname: String, previousCardsCount: Short, nextNickname: String, nextCardsCount: Short, choosingLandlord: Boolean = false, landlord: Boolean = false, turnToPlay: Boolean = false, socketId: Long, gmtCreate: java.sql.Timestamp, gmtUpdate: java.sql.Timestamp)
 
   /** GetResult implicit for fetching TmSeatRow objects using plain SQL queries */
-  implicit def GetResultTmSeatRow(implicit e0: GR[Long], e1: GR[String], e2: GR[Short], e3: GR[java.sql.Timestamp], e4: GR[Int], e5: GR[Boolean]): GR[TmSeatRow] = GR {
+  implicit def GetResultTmSeatRow(implicit e0: GR[Long], e1: GR[String], e2: GR[Short], e3: GR[Int], e4: GR[Boolean], e5: GR[java.sql.Timestamp]): GR[TmSeatRow] = GR {
     prs => import prs._
-      TmSeatRow.tupled((<<[Long], <<[String], <<[Short], <<[Long], <<[String], <<[Long], <<[String], <<[java.sql.Timestamp], <<[java.sql.Timestamp], <<[Long], <<[String], <<[Int], <<[Int], <<[String], <<[Short], <<[String], <<[Short], <<[Boolean], <<[Boolean], <<[Boolean]))
+      TmSeatRow.tupled((<<[Long], <<[String], <<[Short], <<[Long], <<[String], <<[String], <<[String], <<[Long], <<[Int], <<[Int], <<[Int], <<[Int], <<[String], <<[Short], <<[String], <<[Short], <<[Boolean], <<[Boolean], <<[Boolean], <<[Long], <<[java.sql.Timestamp], <<[java.sql.Timestamp]))
   }
 
   /** Table description of table tm_seat. Objects of this class serve as prototypes for rows in queries. */
   class TmSeat(_tableTag: Tag) extends profile.api.Table[TmSeatRow](_tableTag, "tm_seat") {
-    def * = (id, traceId, status, memberId, cards, ip, fingerPrint, gmtCreate, gmtUpdate, gameId, gameType, multiples, baseAmount, previousNickname, previousCardsCount, nextNickname, nextCardsCount, choosingLandlord, landlord, turnToPlay) <> (TmSeatRow.tupled, TmSeatRow.unapply)
+    def * = (id, traceId, status, memberId, cards, landlordCards, fingerPrint, gameId, gameType, deviceType, multiples, baseAmount, previousNickname, previousCardsCount, nextNickname, nextCardsCount, choosingLandlord, landlord, turnToPlay, socketId, gmtCreate, gmtUpdate) <> (TmSeatRow.tupled, TmSeatRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(traceId), Rep.Some(status), Rep.Some(memberId), Rep.Some(cards), Rep.Some(ip), Rep.Some(fingerPrint), Rep.Some(gmtCreate), Rep.Some(gmtUpdate), Rep.Some(gameId), Rep.Some(gameType), Rep.Some(multiples), Rep.Some(baseAmount), Rep.Some(previousNickname), Rep.Some(previousCardsCount), Rep.Some(nextNickname), Rep.Some(nextCardsCount), Rep.Some(choosingLandlord), Rep.Some(landlord), Rep.Some(turnToPlay)).shaped.<>({ r => import r._; _1.map(_ => TmSeatRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8.get, _9.get, _10.get, _11.get, _12.get, _13.get, _14.get, _15.get, _16.get, _17.get, _18.get, _19.get, _20.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(traceId), Rep.Some(status), Rep.Some(memberId), Rep.Some(cards), Rep.Some(landlordCards), Rep.Some(fingerPrint), Rep.Some(gameId), Rep.Some(gameType), Rep.Some(deviceType), Rep.Some(multiples), Rep.Some(baseAmount), Rep.Some(previousNickname), Rep.Some(previousCardsCount), Rep.Some(nextNickname), Rep.Some(nextCardsCount), Rep.Some(choosingLandlord), Rep.Some(landlord), Rep.Some(turnToPlay), Rep.Some(socketId), Rep.Some(gmtCreate), Rep.Some(gmtUpdate)).shaped.<>({ r => import r._; _1.map(_ => TmSeatRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8.get, _9.get, _10.get, _11.get, _12.get, _13.get, _14.get, _15.get, _16.get, _17.get, _18.get, _19.get, _20.get, _21.get, _22.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(int8), PrimaryKey */
     val id: Rep[Long] = column[Long]("id", O.PrimaryKey)
-    /** Database column trace_id SqlType(varchar), Length(64,true) */
-    val traceId: Rep[String] = column[String]("trace_id", O.Length(64, varying = true))
+    /** Database column trace_id SqlType(varchar), Length(32,true) */
+    val traceId: Rep[String] = column[String]("trace_id", O.Length(32, varying = true))
     /** Database column status SqlType(int2) */
     val status: Rep[Short] = column[Short]("status")
     /** Database column member_id SqlType(int8), Default(0) */
     val memberId: Rep[Long] = column[Long]("member_id", O.Default(0L))
-    /** Database column cards SqlType(varchar), Length(60,true) */
-    val cards: Rep[String] = column[String]("cards", O.Length(60, varying = true))
-    /** Database column ip SqlType(int8) */
-    val ip: Rep[Long] = column[Long]("ip")
+    /** Database column cards SqlType(varchar), Length(81,true) */
+    val cards: Rep[String] = column[String]("cards", O.Length(81, varying = true))
+    /** Database column landlord_cards SqlType(varchar), Length(13,true) */
+    val landlordCards: Rep[String] = column[String]("landlord_cards", O.Length(13, varying = true))
     /** Database column finger_print SqlType(varchar), Length(64,true) */
     val fingerPrint: Rep[String] = column[String]("finger_print", O.Length(64, varying = true))
-    /** Database column gmt_create SqlType(timestamp) */
-    val gmtCreate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_create")
-    /** Database column gmt_update SqlType(timestamp) */
-    val gmtUpdate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_update")
     /** Database column game_id SqlType(int8) */
     val gameId: Rep[Long] = column[Long]("game_id")
-    /** Database column game_type SqlType(varchar), Length(32,true) */
-    val gameType: Rep[String] = column[String]("game_type", O.Length(32, varying = true))
+    /** Database column game_type SqlType(int4) */
+    val gameType: Rep[Int] = column[Int]("game_type")
+    /** Database column device_type SqlType(int4) */
+    val deviceType: Rep[Int] = column[Int]("device_type")
     /** Database column multiples SqlType(int4) */
     val multiples: Rep[Int] = column[Int]("multiples")
     /** Database column base_amount SqlType(int4) */
@@ -374,12 +346,18 @@ trait Tables extends DBImpl {
     val nextNickname: Rep[String] = column[String]("next_nickname", O.Length(64, varying = true))
     /** Database column next_cards_count SqlType(int2) */
     val nextCardsCount: Rep[Short] = column[Short]("next_cards_count")
-    /** Database column choosing_landlord SqlType(bool) */
-    val choosingLandlord: Rep[Boolean] = column[Boolean]("choosing_landlord")
-    /** Database column landlord SqlType(bool) */
-    val landlord: Rep[Boolean] = column[Boolean]("landlord")
-    /** Database column turn_to_play SqlType(bool) */
-    val turnToPlay: Rep[Boolean] = column[Boolean]("turn_to_play")
+    /** Database column choosing_landlord SqlType(bool), Default(false) */
+    val choosingLandlord: Rep[Boolean] = column[Boolean]("choosing_landlord", O.Default(false))
+    /** Database column landlord SqlType(bool), Default(false) */
+    val landlord: Rep[Boolean] = column[Boolean]("landlord", O.Default(false))
+    /** Database column turn_to_play SqlType(bool), Default(false) */
+    val turnToPlay: Rep[Boolean] = column[Boolean]("turn_to_play", O.Default(false))
+    /** Database column socket_id SqlType(int8) */
+    val socketId: Rep[Long] = column[Long]("socket_id")
+    /** Database column gmt_create SqlType(timestamp) */
+    val gmtCreate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_create")
+    /** Database column gmt_update SqlType(timestamp) */
+    val gmtUpdate: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("gmt_update")
   }
 
   /** Collection-like TableQuery object for table TmSeat */

@@ -32,32 +32,16 @@ class GameNotifyServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
 
   implicit def gameStatus2Byte(gameStatus: GameStatus): Short = gameStatus.getCode
 
-  def notifyGameStart(traceId: String, memberId: Long, game: towVsOneRepository.TmGameRow, gameIndex: Int, cards: List[Int], dzCards: List[Int], previousUsername: String, nextUsername: String): Unit = {
+  def notifyGameStart(traceId: String, seat: Seat, game: towVsOneRepository.TmGameRow, gameIndex: Int, cards: List[Int], dzCards: List[Int], previousNickName: String, nextNickName: String): Unit = {
 
   }
 
   override def createGame(traceId: String, gameType: Int, seat1: Seat, seat2: Seat, seat3: Seat): Unit = {
-    val memberId1 = seat1.memberId
-    val memberId2 = seat2.memberId
-    val memberId3 = seat3.memberId
 
-    val (player1CardsList, player2CardsList, player3CardsList, dzCardsList) = CardsHelper.initCards()
-    val gameId: Long = towVsOneRepository.getNextGameId()
-    val now = new Timestamp(System.currentTimeMillis())
-    val cards1: String = player1CardsList.mkString(",")
-    val cards2: String = player2CardsList.mkString(",")
-    val cards3: String = player3CardsList.mkString(",")
-    val dzCards: String = dzCardsList.mkString(",")
-    val game: towVsOneRepository.TmGameRow = towVsOneRepository.TmGameRow(gameId, gameType, GameStatus.Playing.getCode, memberId1, memberId2, memberId3, cards1, cards2, cards3, dzCards, 1, now, now)
-    towVsOneRepository.createGame(game)
 
-    val memberResponse1: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId1))
-    val memberResponse2: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId2))
-    val memberResponse3: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId3))
-
-    notifyGameStart(seat1.traceId, memberId1, game, 1, player1CardsList, dzCardsList, memberResponse3.nickName, memberResponse2.nickName)
-    notifyGameStart(seat2.traceId, memberId2, game, 2, player2CardsList, dzCardsList, memberResponse1.nickName, memberResponse3.nickName)
-    notifyGameStart(seat3.traceId, memberId3, game, 3, player3CardsList, dzCardsList, memberResponse2.nickName, memberResponse1.nickName)
+//    notifyGameStart(seat1.traceId, seat1, game, 1, player1CardsList, dzCardsList, memberResponse3.nickName, memberResponse2.nickName)
+//    notifyGameStart(seat2.traceId, seat2, game, 2, player2CardsList, dzCardsList, memberResponse1.nickName, memberResponse3.nickName)
+//    notifyGameStart(seat3.traceId, seat3, game, 3, player3CardsList, dzCardsList, memberResponse2.nickName, memberResponse1.nickName)
   }
 
   override def getOnlineMemberAkkaAddress(memberId: Long): Option[String] = {

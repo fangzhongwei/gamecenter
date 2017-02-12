@@ -199,36 +199,36 @@ class GameEndpoint$FinagleService(
       case e: Exception => Future.exception(e)
     }
   })
-  private[this] object __stats_saveChannelAddress {
-    val RequestsCounter = scopedStats.scope("saveChannelAddress").counter("requests")
-    val SuccessCounter = scopedStats.scope("saveChannelAddress").counter("success")
-    val FailuresCounter = scopedStats.scope("saveChannelAddress").counter("failures")
-    val FailuresScope = scopedStats.scope("saveChannelAddress").scope("failures")
+  private[this] object __stats_generateSocketId {
+    val RequestsCounter = scopedStats.scope("generateSocketId").counter("requests")
+    val SuccessCounter = scopedStats.scope("generateSocketId").counter("success")
+    val FailuresCounter = scopedStats.scope("generateSocketId").counter("failures")
+    val FailuresScope = scopedStats.scope("generateSocketId").scope("failures")
   }
-  addFunction("saveChannelAddress", { (iprot: TProtocol, seqid: Int) =>
+  addFunction("generateSocketId", { (iprot: TProtocol, seqid: Int) =>
     try {
-      __stats_saveChannelAddress.RequestsCounter.incr()
-      val args = SaveChannelAddress.Args.decode(iprot)
+      __stats_generateSocketId.RequestsCounter.incr()
+      val args = GenerateSocketId.Args.decode(iprot)
       iprot.readMessageEnd()
       (try {
-        iface.saveChannelAddress(args.traceId, args.memberId, args.host, args.addressType)
+        iface.generateSocketId(args.traceId)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
-        reply("saveChannelAddress", seqid, SaveChannelAddress.Result(success = Some(value)))
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GenerateSocketIdResponse =>
+        reply("generateSocketId", seqid, GenerateSocketId.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)
       }.respond {
         case Return(_) =>
-          __stats_saveChannelAddress.SuccessCounter.incr()
+          __stats_generateSocketId.SuccessCounter.incr()
         case Throw(ex) =>
-          __stats_saveChannelAddress.FailuresCounter.incr()
-          __stats_saveChannelAddress.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+          __stats_generateSocketId.FailuresCounter.incr()
+          __stats_generateSocketId.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
       }
     } catch {
       case e: TProtocolException => {
         iprot.readMessageEnd()
-        exception("saveChannelAddress", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+        exception("generateSocketId", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
       }
       case e: Exception => Future.exception(e)
     }
@@ -331,40 +331,6 @@ class GameEndpoint$FinagleService(
       case e: TProtocolException => {
         iprot.readMessageEnd()
         exception("playCards", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
-      }
-      case e: Exception => Future.exception(e)
-    }
-  })
-  private[this] object __stats_setGameStatus {
-    val RequestsCounter = scopedStats.scope("setGameStatus").counter("requests")
-    val SuccessCounter = scopedStats.scope("setGameStatus").counter("success")
-    val FailuresCounter = scopedStats.scope("setGameStatus").counter("failures")
-    val FailuresScope = scopedStats.scope("setGameStatus").scope("failures")
-  }
-  addFunction("setGameStatus", { (iprot: TProtocol, seqid: Int) =>
-    try {
-      __stats_setGameStatus.RequestsCounter.incr()
-      val args = SetGameStatus.Args.decode(iprot)
-      iprot.readMessageEnd()
-      (try {
-        iface.setGameStatus(args.traceId, args.memberId, args.gameStatus)
-      } catch {
-        case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
-        reply("setGameStatus", seqid, SetGameStatus.Result(success = Some(value)))
-      }.rescue {
-        case e => Future.exception(e)
-      }.respond {
-        case Return(_) =>
-          __stats_setGameStatus.SuccessCounter.incr()
-        case Throw(ex) =>
-          __stats_setGameStatus.FailuresCounter.incr()
-          __stats_setGameStatus.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
-      }
-    } catch {
-      case e: TProtocolException => {
-        iprot.readMessageEnd()
-        exception("setGameStatus", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
       }
       case e: Exception => Future.exception(e)
     }

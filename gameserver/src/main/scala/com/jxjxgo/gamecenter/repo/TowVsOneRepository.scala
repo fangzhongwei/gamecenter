@@ -2,6 +2,7 @@ package com.jxjxgo.gamecenter.repo
 
 import java.sql.{Connection, PreparedStatement, Timestamp}
 
+import com.jxjxgo.gamecenter.domain.mq.joingame.JoinGameMessage
 import com.jxjxgo.gamecenter.domain.{PlayTable, Room, Seat}
 import com.jxjxgo.gamecenter.enumnate.{GameStatus, RoomStatus, SeatStatus, TableStatus}
 import com.jxjxgo.mysql.connection.DBComponent
@@ -15,12 +16,25 @@ import scala.concurrent.{Await, Future}
 trait TowVsOneRepository extends Tables {
   this: DBComponent =>
 
+
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   import profile.api._
 
-  def createGame(game: TmGameRow): Future[Int] = db.run {
-    TmGame += game
+  def createGame(game: TmGameRow, seatId1: Long, seatId2: Long, seatId3: Long, player1CardsList: List[Int], player2CardsList: List[Int], player3CardsList: List[Int], dzCardsList: List[Int], nickName1: String, nickName2: String, nickName3: String): Unit = {
+    val cards1: String = player1CardsList.mkString(",")
+    val cards2: String = player2CardsList.mkString(",")
+    val cards3: String = player3CardsList.mkString(",")
+    val dzCards: String = dzCardsList.mkString(",")
+    val now = new Timestamp(System.currentTimeMillis())
+
+    val a = (for {
+      ns <- TmGame += game
+      _ <- TmSeat.filter(_.id === seatId1).map(s => (s.status, s.gameId, s.multiples, s.cards, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.turnToPlay, s.choosingLandlord, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards1, player3CardsList.size.toShort, nickName3, player2CardsList.size.toShort, nickName2, true, true, false, now)
+      _ <- TmSeat.filter(_.id === seatId2).map(s => (s.status, s.gameId, s.multiples, s.cards, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.turnToPlay, s.choosingLandlord, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards2, player1CardsList.size.toShort, nickName1, player3CardsList.size.toShort, nickName3, false, false, false, now)
+      _ <- TmSeat.filter(_.id === seatId3).map(s => (s.status, s.gameId, s.multiples, s.cards, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.turnToPlay, s.choosingLandlord, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards3, player2CardsList.size.toShort, nickName2, player1CardsList.size.toShort, nickName1, false, false, false, now)
+    } yield ()).transactionally
+    Await.result(db.run(a), Duration.Inf)
   }
 
   def getRoomConfig(gameType: Int, deviceType: Int): Option[TmRoomConfigRow] = {
@@ -48,7 +62,7 @@ trait TowVsOneRepository extends Tables {
     }, Duration.Inf)
   }
 
-  def sitDown(traceId: String, memberId: Long, room: Room, table: PlayTable, seat: Seat): Boolean = {
+  def sitDown(traceId: String, m: JoinGameMessage, room: Room, table: PlayTable, seat: Seat): Boolean = {
     var session: JdbcBackend#SessionDef = null
     var conn: Connection = null
     try {
@@ -89,8 +103,7 @@ trait TowVsOneRepository extends Tables {
           conn.rollback()
           return false
       }
-
-      seatSitDown(conn, seat.id, memberId, SeatStatus.Playing, seat.status, traceId)
+      seatSitDown(conn, seat.id, m, SeatStatus.WaitingStart, seat.status, traceId)
       conn.commit()
       true
     } catch {
@@ -125,13 +138,21 @@ trait TowVsOneRepository extends Tables {
     prepareStatement.executeUpdate()
   }
 
-  private def seatSitDown(conn: Connection, memberId: Long, seatId: Long, newStatus: SeatStatus, status: Short, traceId: String): Int = {
-    val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, member_id = ?, trace_id = ? WHERE id = ? AND status = ?")
+  private def seatSitDown(conn: Connection, seatId: Long, m: JoinGameMessage, newStatus: SeatStatus, status: Short, traceId: String): Int = {
+    val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, device_type = ?, game_type = ?, base_amount = ?, member_id = ?, trace_id = ?, device_type = ?, finger_print = ?, game_type = ?, socket_id = ? WHERE id = ? AND status = ?")
     prepareStatement.setShort(1, newStatus.getCode.toShort)
-    prepareStatement.setLong(2, memberId)
-    prepareStatement.setString(3, traceId)
-    prepareStatement.setLong(4, seatId)
-    prepareStatement.setShort(5, status)
+    prepareStatement.setInt(2, m.deviceType)
+    prepareStatement.setInt(3, m.gameType)
+    prepareStatement.setInt(4, m.baseAmount)
+    prepareStatement.setLong(5, m.memberId)
+    prepareStatement.setString(6, traceId)
+    prepareStatement.setInt(7, m.deviceType)
+    prepareStatement.setString(8, m.fingerPrint)
+    prepareStatement.setInt(9, m.gameType)
+    prepareStatement.setLong(10, m.socketId)
+
+    prepareStatement.setLong(11, seatId)
+    prepareStatement.setShort(12, status)
     prepareStatement.executeUpdate()
   }
 
@@ -185,17 +206,6 @@ trait TowVsOneRepository extends Tables {
     }, Duration.Inf)
   }
 
-  def updateOrInsertChannelAddress(row: TmChannelAddressRow) = {
-    val memberId = row.memberId
-    val result: Int = Await.result(db.run {
-      TmChannelAddress.filter(_.memberId === memberId).length.result
-    }, Duration.Inf)
-    result > 0 match {
-      case true => db.run(TmChannelAddress.filter(_.memberId === memberId).map(r => (r.host, r.gmtUpdate)).update(row.host, row.gmtUpdate))
-      case false => db.run(TmChannelAddress += row)
-    }
-  }
-
   def createOnlineRecord(row: TmOnlineRecordRow) = db.run {
     TmOnlineRecord += row
   }
@@ -206,12 +216,24 @@ trait TowVsOneRepository extends Tables {
     }, Duration.Inf)
   }
 
+  def getSeat(seatId: Long):TmSeatRow = {
+    Await.result(db.run {
+      TmSeat.filter(_.id === seatId).result.head
+    }, Duration.Inf)
+  }
+
+  def getSeatStatus(seatId: Long): SeatStatus = {
+    Await.result(db.run {
+      TmSeat.filter(_.id === seatId).map(_.status).result.head.map(SeatStatus.get(_))
+    }, Duration.Inf)
+  }
+
   def playerDropped(seatId: Long, seatStatus: SeatStatus) = db.run {
     TmSeat.filter(_.id === seatId).map(r => (r.status, r.gmtUpdate)).update(seatStatus.getCode.toShort, new Timestamp(System.currentTimeMillis()))
   }
 
-  def offline(socketUuid: String) = db.run {
-    TmOnlineRecord.filter(_.socketUuid === socketUuid).map(r => (r.online, r.gmtOffline)).update(false, Some(new Timestamp(System.currentTimeMillis())))
+  def offline(socketUuid: Long) = db.run {
+    TmOnlineRecord.filter(_.socketId === socketUuid).map(r => (r.online, r.gmtOffline)).update(false, Some(new Timestamp(System.currentTimeMillis())))
   }
 
   def getNextGameId(): Long = {
@@ -220,6 +242,10 @@ trait TowVsOneRepository extends Tables {
 
   def getNextPlayCardId(): Long = {
     Await.result(db.run(sql"""select nextval('seq_play_cards_id')""".as[(Long)]), Duration.Inf).head
+  }
+
+  def generateSocketId(): Long = {
+    Await.result(db.run(sql"""select nextval('seq_socket_id')""".as[(Long)]), Duration.Inf).head
   }
 }
 

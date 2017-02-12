@@ -4,19 +4,19 @@ package com.jxjxgo.gamecenter.enumnate;
  * Created by fangzhongwei on 2016/12/17.
  */
 public enum GameType {
-    None(0, ""),
+    None(0, "None"),
 
-    T1010(10, ""),
+    T1010(10, "T1010"),
 
-    T1020(20, ""),
+    T1020(20, "T1020"),
 
-    T1050(50, ""),
+    T1050(50, "T1050"),
 
-    T1100(100, ""),
+    T1100(100, "T1100"),
 
-    T1200(200, ""),
+    T1200(200, "T1200"),
 
-    T1500(500, "");
+    T1500(500, "T1500");
 
     private int code;
     private String desc;

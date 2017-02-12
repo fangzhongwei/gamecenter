@@ -27,8 +27,8 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
   val Struct = new TStruct("GameTurnResponse")
   val GameIdField = new TField("gameId", TType.I64, 1)
   val GameIdFieldManifest = implicitly[Manifest[Long]]
-  val GameTypeField = new TField("gameType", TType.STRING, 2)
-  val GameTypeFieldManifest = implicitly[Manifest[String]]
+  val GameTypeField = new TField("gameType", TType.I32, 2)
+  val GameTypeFieldManifest = implicitly[Manifest[Int]]
   val CardsField = new TField("cards", TType.STRING, 3)
   val CardsFieldManifest = implicitly[Manifest[String]]
   val BaseAmountField = new TField("baseAmount", TType.I32, 4)
@@ -256,7 +256,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
   private[this] def lazyDecode(_iprot: LazyTProtocol): GameTurnResponse = {
 
     var gameId: Long = 0L
-    var gameTypeOffset: Int = -1
+    var gameType: Int = 0
     var cardsOffset: Int = -1
     var baseAmount: Int = 0
     var multiples: Int = 0
@@ -295,11 +295,11 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
             }
           case 2 =>
             _field.`type` match {
-              case TType.STRING =>
-                gameTypeOffset = _iprot.offsetSkipString
+              case TType.I32 =>
     
+                gameType = readGameTypeValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.STRING
+                val _expectedType = TType.I32
                 throw new TProtocolException(
                   "Received wrong type for field 'gameType' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
@@ -463,7 +463,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       _start_offset,
       _iprot.offset,
       gameId,
-      gameTypeOffset,
+      gameType,
       cardsOffset,
       baseAmount,
       multiples,
@@ -489,7 +489,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
 
   private[this] def eagerDecode(_iprot: TProtocol): GameTurnResponse = {
     var gameId: Long = 0L
-    var gameType: String = ""
+    var gameType: Int = 0
     var cards: String = ""
     var baseAmount: Int = 0
     var multiples: Int = 0
@@ -525,10 +525,10 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
             }
           case 2 =>
             _field.`type` match {
-              case TType.STRING =>
+              case TType.I32 =>
                 gameType = readGameTypeValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.STRING
+                val _expectedType = TType.I32
                 throw new TProtocolException(
                   "Received wrong type for field 'gameType' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
@@ -698,7 +698,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
 
   def apply(
     gameId: Long = 0L,
-    gameType: String = "",
+    gameType: Int = 0,
     cards: String = "",
     baseAmount: Int = 0,
     multiples: Int = 0,
@@ -725,7 +725,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       turnToPlay
     )
 
-  def unapply(_item: GameTurnResponse): _root_.scala.Option[scala.Product12[Long, String, String, Int, Int, String, Int, String, Int, Boolean, Boolean, Boolean]] = _root_.scala.Some(_item)
+  def unapply(_item: GameTurnResponse): _root_.scala.Option[scala.Product12[Long, Int, String, Int, Int, String, Int, String, Int, Boolean, Boolean, Boolean]] = _root_.scala.Some(_item)
 
 
   @inline private def readGameIdValue(_iprot: TProtocol): Long = {
@@ -742,18 +742,18 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     _oprot.writeI64(gameId_item)
   }
 
-  @inline private def readGameTypeValue(_iprot: TProtocol): String = {
-    _iprot.readString()
+  @inline private def readGameTypeValue(_iprot: TProtocol): Int = {
+    _iprot.readI32()
   }
 
-  @inline private def writeGameTypeField(gameType_item: String, _oprot: TProtocol): Unit = {
+  @inline private def writeGameTypeField(gameType_item: Int, _oprot: TProtocol): Unit = {
     _oprot.writeFieldBegin(GameTypeField)
     writeGameTypeValue(gameType_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeGameTypeValue(gameType_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(gameType_item)
+  @inline private def writeGameTypeValue(gameType_item: Int, _oprot: TProtocol): Unit = {
+    _oprot.writeI32(gameType_item)
   }
 
   @inline private def readCardsValue(_iprot: TProtocol): String = {
@@ -910,7 +910,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
    */
   class Immutable(
       val gameId: Long,
-      val gameType: String,
+      val gameType: Int,
       val cards: String,
       val baseAmount: Int,
       val multiples: Int,
@@ -925,7 +925,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     extends GameTurnResponse {
     def this(
       gameId: Long = 0L,
-      gameType: String = "",
+      gameType: Int = 0,
       cards: String = "",
       baseAmount: Int = 0,
       multiples: Int = 0,
@@ -963,7 +963,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       _start_offset: Int,
       _end_offset: Int,
       val gameId: Long,
-      gameTypeOffset: Int,
+      val gameType: Int,
       cardsOffset: Int,
       val baseAmount: Int,
       val multiples: Int,
@@ -984,12 +984,6 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       }
     }
 
-    lazy val gameType: String =
-      if (gameTypeOffset == -1)
-        ""
-      else {
-        _proto.decodeString(_buf, gameTypeOffset)
-      }
     lazy val cards: String =
       if (cardsOffset == -1)
         ""
@@ -1031,7 +1025,7 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
   trait Proxy extends GameTurnResponse {
     protected def _underlying_GameTurnResponse: GameTurnResponse
     override def gameId: Long = _underlying_GameTurnResponse.gameId
-    override def gameType: String = _underlying_GameTurnResponse.gameType
+    override def gameType: Int = _underlying_GameTurnResponse.gameType
     override def cards: String = _underlying_GameTurnResponse.cards
     override def baseAmount: Int = _underlying_GameTurnResponse.baseAmount
     override def multiples: Int = _underlying_GameTurnResponse.multiples
@@ -1048,13 +1042,13 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
 
 trait GameTurnResponse
   extends ThriftStruct
-  with scala.Product12[Long, String, String, Int, Int, String, Int, String, Int, Boolean, Boolean, Boolean]
+  with scala.Product12[Long, Int, String, Int, Int, String, Int, String, Int, Boolean, Boolean, Boolean]
   with java.io.Serializable
 {
   import GameTurnResponse._
 
   def gameId: Long
-  def gameType: String
+  def gameType: Int
   def cards: String
   def baseAmount: Int
   def multiples: Int
@@ -1103,7 +1097,7 @@ trait GameTurnResponse
                 _root_.scala.None
               }
             case 2 =>
-              if (gameType ne null) {
+              if (true) {
                 writeGameTypeValue(gameType, _oprot)
                 _root_.scala.Some(GameTurnResponse.GameTypeField)
               } else {
@@ -1206,7 +1200,7 @@ trait GameTurnResponse
    */
   def setField(_blob: TFieldBlob): GameTurnResponse = {
     var gameId: Long = this.gameId
-    var gameType: String = this.gameType
+    var gameType: Int = this.gameType
     var cards: String = this.cards
     var baseAmount: Int = this.baseAmount
     var multiples: Int = this.multiples
@@ -1269,7 +1263,7 @@ trait GameTurnResponse
    */
   def unsetField(_fieldId: Short): GameTurnResponse = {
     var gameId: Long = this.gameId
-    var gameType: String = this.gameType
+    var gameType: Int = this.gameType
     var cards: String = this.cards
     var baseAmount: Int = this.baseAmount
     var multiples: Int = this.multiples
@@ -1285,7 +1279,7 @@ trait GameTurnResponse
       case 1 =>
         gameId = 0L
       case 2 =>
-        gameType = ""
+        gameType = 0
       case 3 =>
         cards = ""
       case 4 =>
@@ -1359,7 +1353,7 @@ trait GameTurnResponse
     GameTurnResponse.validate(this)
     _oprot.writeStructBegin(Struct)
     writeGameIdField(gameId, _oprot)
-    if (gameType ne null) writeGameTypeField(gameType, _oprot)
+    writeGameTypeField(gameType, _oprot)
     if (cards ne null) writeCardsField(cards, _oprot)
     writeBaseAmountField(baseAmount, _oprot)
     writeMultiplesField(multiples, _oprot)
@@ -1379,7 +1373,7 @@ trait GameTurnResponse
 
   def copy(
     gameId: Long = this.gameId,
-    gameType: String = this.gameType,
+    gameType: Int = this.gameType,
     cards: String = this.cards,
     baseAmount: Int = this.baseAmount,
     multiples: Int = this.multiples,

@@ -12,7 +12,8 @@ lazy val commonSettings = Seq(
     "com.jxjxgo.common" % "common-utils_2.11" % "1.0",
     "com.jxjxgo.common" % "common-edecrypt_2.11" % "1.0",
     "com.jxjxgo.common" % "common-redis_2.11" % "1.0",
-    "com.jxjxgo.sso" % "ssocommonlib_2.11" % "1.0"
+    "com.jxjxgo.sso" % "ssocommonlib_2.11" % "1.0",
+    "com.trueaccord.scalapb" % "scalapb-runtime_2.11" % "0.5.46"
   )
 )
 

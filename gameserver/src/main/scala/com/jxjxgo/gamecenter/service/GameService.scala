@@ -6,8 +6,9 @@ import javax.inject.Inject
 import com.jxjxgo.account.rpc.domain.{AccountEndpoint, DiamondAccountResponse}
 import com.jxjxgo.common.exception.ErrorCode
 import com.jxjxgo.common.kafka.template.ProducerTemplate
+import com.jxjxgo.gamecenter.domain.mq.joingame.JoinGameMessage
 import com.jxjxgo.gamecenter.enumnate.{GameStatus, SeatStatus}
-import com.jxjxgo.gamecenter.repo.{TowVsOneRepository}
+import com.jxjxgo.gamecenter.repo.TowVsOneRepository
 import com.jxjxgo.gamecenter.rpc.domain._
 import com.jxjxgo.sso.rpc.domain.SSOServiceEndpoint
 import com.twitter.util.{Await, Future}
@@ -17,19 +18,17 @@ import org.slf4j.{Logger, LoggerFactory}
   * Created by fangzhongwei on 2016/12/16.
   */
 trait GameService {
-  def playerOffline(traceId: String, socketUuid: String, memberId: Long): GameBaseResponse
+  def playerOffline(traceId: String, socketUuid: Long, memberId: Long): GameBaseResponse
 
   def playerOnline(traceId: String, request: OnlineRequest): GameBaseResponse
 
-  def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String): GameBaseResponse
+  def generateSocketId(traceId: String): GenerateSocketIdResponse
 
   def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse
 
   def joinGame(traceId: String, request: JoinGameRequest): GameBaseResponse
 
   def playCards(traceId: String, request: PlayCardsRequest): PlayCardsResponse
-
-  def setGameStatus(traceId: String, memberId: Long, gameStatus: String): GameBaseResponse
 }
 
 class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], accountEndpoint: AccountEndpoint[Future], producerTemplate: ProducerTemplate, towVsOneRepository: TowVsOneRepository) extends GameService {
@@ -43,7 +42,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
   private[this] val addressExpireSeconds = 24 * 60 * 60
 
   implicit def convert(s: towVsOneRepository.TmSeatRow): GameTurnResponse = {
-    GameTurnResponse(gameId = s.gameId, gameType = s.gameType)
+    GameTurnResponse(s.gameId, s.gameType, s.cards, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.choosingLandlord, s.landlord, s.turnToPlay)
   }
 
   override def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse = {
@@ -83,7 +82,8 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
           case false => balance > config.maxDiamondAmount match {
             case true => GameBaseResponse(code = ErrorCode.EC_GAME_DIAMOND_TOO_MUCH.getCode)
             case false =>
-              producerTemplate.send(config.topic, null)
+              val game: JoinGameMessage = JoinGameMessage(traceId, request.socketId, request.ip, deviceType, request.fingerPrint, memberId, gameType)
+              producerTemplate.send(config.topic, game.toByteArray)
               GameBaseResponse("0")
           }
         }
@@ -97,17 +97,8 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
     null
   }
 
-  override def setGameStatus(traceId: String, memberId: Long, gameStatus: String): GameBaseResponse = {
-    null
-  }
 
-  override def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String): GameBaseResponse = {
-    val timestamp: Timestamp = new Timestamp(System.currentTimeMillis())
-    towVsOneRepository.updateOrInsertChannelAddress(towVsOneRepository.TmChannelAddressRow(memberId, host, "rpc", timestamp, timestamp))
-    GameBaseResponse("0")
-  }
-
-  override def playerOffline(traceId: String, socketUuid: String, memberId: Long): GameBaseResponse = {
+  override def playerOffline(traceId: String, socketUuid: Long, memberId: Long): GameBaseResponse = {
     towVsOneRepository.offline(socketUuid)
     towVsOneRepository.findPlayingSeatByMemberAndStatus(memberId, Set(SeatStatus.Playing.getCode.toShort)) match {
       case Some(seat) =>
@@ -120,5 +111,9 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
   override def playerOnline(traceId: String, r: OnlineRequest): GameBaseResponse = {
     towVsOneRepository.createOnlineRecord(towVsOneRepository.TmOnlineRecordRow(r.socketUuid, r.deviceType.toShort, r.fingerPrint, r.memberId, r.ip, r.host, new Timestamp(System.currentTimeMillis()), None, true))
     GameBaseResponse("0")
+  }
+
+  override def generateSocketId(traceId: String): GenerateSocketIdResponse = {
+    GenerateSocketIdResponse(code = "0", socketId = towVsOneRepository.generateSocketId())
   }
 }
