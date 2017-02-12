@@ -309,10 +309,10 @@ class GameEndpoint$FinagleClient(
     val FailuresScope = scopedStats.scope("joinGame").scope("failures")
   }
   
-  def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] = {
+  def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
     __stats_joinGame.RequestsCounter.incr()
     val inputArgs = JoinGame.Args(traceId, request)
-    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] =
+    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
       response => {
         val result = decodeResponse(response, JoinGame.Result)
         val exception: Throwable =
@@ -326,7 +326,7 @@ class GameEndpoint$FinagleClient(
           _root_.com.twitter.util.Throw(missingResult("joinGame"))
       }
   
-    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse](inputArgs, replyDeserializer)
+    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse](inputArgs, replyDeserializer)
     _root_.com.twitter.finagle.context.Contexts.local.let(
       _root_.com.twitter.finagle.thrift.DeserializeCtx.Key,
       serdeCtx

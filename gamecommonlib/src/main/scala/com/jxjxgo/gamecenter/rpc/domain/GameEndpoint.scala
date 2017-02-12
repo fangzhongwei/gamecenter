@@ -28,6 +28,7 @@ import scala.collection.mutable.{
 import scala.collection.{Map, Set}
 import scala.language.higherKinds
 
+
 @javax.annotation.Generated(value = Array("com.twitter.scrooge.Compiler"))
 trait GameEndpoint[+MM[_]] extends ThriftService {
   
@@ -39,12 +40,14 @@ trait GameEndpoint[+MM[_]] extends ThriftService {
   
   def checkGameStatus(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.CheckGameStatusRequest): MM[com.jxjxgo.gamecenter.rpc.domain.CheckGameStatusResponse]
   
-  def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): MM[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse]
+  def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): MM[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
   
   def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): MM[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]
   
   def setGameStatus(traceId: String, memberId: Long, gameStatus: String): MM[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
 }
+
+
 
 object GameEndpoint { self =>
 
@@ -109,7 +112,7 @@ object GameEndpoint { self =>
       __checkGameStatus_service(self.CheckGameStatus.Args(traceId, request))
     private[this] val __joinGame_service =
       ThriftServiceIface.resultFilter(self.JoinGame) andThen serviceIface.joinGame
-    def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] =
+    def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
       __joinGame_service(self.JoinGame.Args(traceId, request))
     private[this] val __playCards_service =
       ThriftServiceIface.resultFilter(self.PlayCards) andThen serviceIface.playCards
@@ -2309,13 +2312,13 @@ object GameEndpoint { self =>
       override def productPrefix: String = "Args"
     }
 
-    type SuccessType = com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse
+    type SuccessType = com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse
     
     object Result extends ThriftStructCodec3[Result] {
       private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
       val Struct = new TStruct("joinGame_result")
       val SuccessField = new TField("success", TType.STRUCT, 0)
-      val SuccessFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse]]
+      val SuccessFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
     
       /**
        * Field information in declaration order.
@@ -2348,7 +2351,7 @@ object GameEndpoint { self =>
             {
               val field = original.success
               field.map { field =>
-                com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse.withoutPassthroughFields(field)
+                com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse.withoutPassthroughFields(field)
               }
             }
         )
@@ -2358,7 +2361,7 @@ object GameEndpoint { self =>
       }
     
       override def decode(_iprot: TProtocol): Result = {
-        var success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] = _root_.scala.None
+        var success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
         var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
         var _done = false
     
@@ -2402,26 +2405,26 @@ object GameEndpoint { self =>
       }
     
       def apply(
-        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] = _root_.scala.None
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
       ): Result =
         new Result(
           success
         )
     
-      def unapply(_item: Result): _root_.scala.Option[_root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse]] = _root_.scala.Some(_item.success)
+      def unapply(_item: Result): _root_.scala.Option[_root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]] = _root_.scala.Some(_item.success)
     
     
-      @inline private def readSuccessValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse = {
-        com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse.decode(_iprot)
+      @inline private def readSuccessValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse = {
+        com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse.decode(_iprot)
       }
     
-      @inline private def writeSuccessField(success_item: com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse, _oprot: TProtocol): Unit = {
+      @inline private def writeSuccessField(success_item: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse, _oprot: TProtocol): Unit = {
         _oprot.writeFieldBegin(SuccessField)
         writeSuccessValue(success_item, _oprot)
         _oprot.writeFieldEnd()
       }
     
-      @inline private def writeSuccessValue(success_item: com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse, _oprot: TProtocol): Unit = {
+      @inline private def writeSuccessValue(success_item: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse, _oprot: TProtocol): Unit = {
         success_item.write(_oprot)
       }
     
@@ -2429,15 +2432,15 @@ object GameEndpoint { self =>
     }
     
     class Result(
-        val success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse],
+        val success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse],
         val _passthroughFields: immutable$Map[Short, TFieldBlob])
-      extends ThriftResponse[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] with ThriftStruct
-      with scala.Product1[Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse]]
+      extends ThriftResponse[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] with ThriftStruct
+      with scala.Product1[Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
       with java.io.Serializable
     {
       import Result._
       def this(
-        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] = _root_.scala.None
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
       ) = this(
         success,
         Map.empty
@@ -2445,7 +2448,7 @@ object GameEndpoint { self =>
     
       def _1 = success
     
-      def successField: Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] = success
+      def successField: Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = success
       def exceptionFields: Iterable[Option[com.twitter.scrooge.ThriftException]] = Seq()
     
     
@@ -2461,7 +2464,7 @@ object GameEndpoint { self =>
       }
     
       def copy(
-        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse] = this.success,
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = this.success,
         _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
       ): Result =
         new Result(
@@ -2491,7 +2494,7 @@ object GameEndpoint { self =>
       override def productPrefix: String = "Result"
     }
 
-    type FunctionType = Function1[Args,Future[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse]]
+    type FunctionType = Function1[Args,Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
     type ServiceType = com.twitter.finagle.Service[Args, Result]
 
     private[this] val toResult = (res: SuccessType) => Result(Some(res))
@@ -3477,7 +3480,7 @@ object GameEndpoint { self =>
     
     def checkGameStatus(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.CheckGameStatusRequest): Future[com.jxjxgo.gamecenter.rpc.domain.CheckGameStatusResponse]
     
-    def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse]
+    def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
     
     def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]
     

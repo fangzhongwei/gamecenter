@@ -4,6 +4,7 @@ import java.util
 
 import com.google.inject.name.Names
 import com.google.inject.{AbstractModule, Guice, TypeLiteral}
+import com.jxjxgo.account.rpc.domain.AccountEndpoint
 import com.jxjxgo.common.helper.ConfigHelper
 import com.jxjxgo.common.kafka.template.{ConsumerTemplate, ConsumerTemplateImpl, ProducerTemplate, ProducerTemplateImpl}
 import com.jxjxgo.common.redis.{RedisClientTemplate, RedisClientTemplateImpl}
@@ -33,6 +34,7 @@ object ApplicationServer extends App {
         bind(classOf[ConsumerTemplate]).to(classOf[ConsumerTemplateImpl]).asEagerSingleton()
         bind(classOf[TowVsOneRepository]).to(classOf[TowVsOneRepositoryImpl]).asEagerSingleton()
         bind(new TypeLiteral[MemberEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[MemberEndpoint[Future]](config.getString("member.thrift.host.port")))
+        bind(new TypeLiteral[AccountEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[AccountEndpoint[Future]](config.getString("account.thrift.host.port")))
         bind(classOf[CoordinateService]).to(classOf[CoordinateServiceImpl]).asEagerSingleton()
         bind(classOf[GameService]).to(classOf[GameServiceImpl]).asEagerSingleton()
         bind(classOf[ThriftService]).to(classOf[GameEndpointImpl]).asEagerSingleton()

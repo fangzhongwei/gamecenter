@@ -74,7 +74,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
     ),
     new ThriftStructFieldInfo(
       Turn0Field,
-      false,
+      true,
       false,
       Turn0FieldManifest,
       _root_.scala.None,
@@ -94,7 +94,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
     ),
     new ThriftStructFieldInfo(
       Turn2Field,
-      false,
+      true,
       false,
       Turn2FieldManifest,
       _root_.scala.None,
@@ -133,7 +133,9 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
       turn0 =
         {
           val field = original.turn0
-          com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
+          field.map { field =>
+            com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
+          }
         },
       memberId2 =
         {
@@ -143,7 +145,9 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
       turn2 =
         {
           val field = original.turn2
-          com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
+          field.map { field =>
+            com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse.withoutPassthroughFields(field)
+          }
         }
     )
 
@@ -156,9 +160,9 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
     var codeOffset: Int = -1
     var isFinished: Boolean = false
     var memberId0: Long = 0L
-    var turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = null
+    var turn0: Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = None
     var memberId2: Long = 0L
-    var turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = null
+    var turn2: Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = None
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -217,7 +221,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
             _field.`type` match {
               case TType.STRUCT =>
     
-                turn0 = readTurn0Value(_iprot)
+                turn0 = Some(readTurn0Value(_iprot))
               case _actualType =>
                 val _expectedType = TType.STRUCT
                 throw new TProtocolException(
@@ -245,7 +249,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
             _field.`type` match {
               case TType.STRUCT =>
     
-                turn2 = readTurn2Value(_iprot)
+                turn2 = Some(readTurn2Value(_iprot))
               case _actualType =>
                 val _expectedType = TType.STRUCT
                 throw new TProtocolException(
@@ -293,9 +297,9 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
     var code: String = ""
     var isFinished: Boolean = false
     var memberId0: Long = 0L
-    var turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = null
+    var turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
     var memberId2: Long = 0L
-    var turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = null
+    var turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -348,7 +352,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
           case 4 =>
             _field.`type` match {
               case TType.STRUCT =>
-                turn0 = readTurn0Value(_iprot)
+                turn0 = _root_.scala.Some(readTurn0Value(_iprot))
               case _actualType =>
                 val _expectedType = TType.STRUCT
                 throw new TProtocolException(
@@ -374,7 +378,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
           case 6 =>
             _field.`type` match {
               case TType.STRUCT =>
-                turn2 = readTurn2Value(_iprot)
+                turn2 = _root_.scala.Some(readTurn2Value(_iprot))
               case _actualType =>
                 val _expectedType = TType.STRUCT
                 throw new TProtocolException(
@@ -412,9 +416,9 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
     code: String = "",
     isFinished: Boolean = false,
     memberId0: Long = 0L,
-    turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
+    turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None,
     memberId2: Long = 0L,
-    turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
+    turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
   ): PlayCardsResponse =
     new Immutable(
       code,
@@ -425,7 +429,7 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
       turn2
     )
 
-  def unapply(_item: PlayCardsResponse): _root_.scala.Option[scala.Product6[String, Boolean, Long, com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse, Long, com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]] = _root_.scala.Some(_item)
+  def unapply(_item: PlayCardsResponse): _root_.scala.Option[scala.Product6[String, Boolean, Long, Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse], Long, Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]]] = _root_.scala.Some(_item)
 
 
   @inline private def readCodeValue(_iprot: TProtocol): String = {
@@ -528,18 +532,18 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
       val code: String,
       val isFinished: Boolean,
       val memberId0: Long,
-      val turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
+      val turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse],
       val memberId2: Long,
-      val turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
+      val turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse],
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends PlayCardsResponse {
     def this(
       code: String = "",
       isFinished: Boolean = false,
       memberId0: Long = 0L,
-      turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
+      turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None,
       memberId2: Long = 0L,
-      turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
+      turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _root_.scala.None
     ) = this(
       code,
       isFinished,
@@ -563,9 +567,9 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
       codeOffset: Int,
       val isFinished: Boolean,
       val memberId0: Long,
-      val turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
+      val turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse],
       val memberId2: Long,
-      val turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse,
+      val turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse],
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends PlayCardsResponse {
 
@@ -607,16 +611,16 @@ object PlayCardsResponse extends ThriftStructCodec3[PlayCardsResponse] {
     override def code: String = _underlying_PlayCardsResponse.code
     override def isFinished: Boolean = _underlying_PlayCardsResponse.isFinished
     override def memberId0: Long = _underlying_PlayCardsResponse.memberId0
-    override def turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = _underlying_PlayCardsResponse.turn0
+    override def turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _underlying_PlayCardsResponse.turn0
     override def memberId2: Long = _underlying_PlayCardsResponse.memberId2
-    override def turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = _underlying_PlayCardsResponse.turn2
+    override def turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = _underlying_PlayCardsResponse.turn2
     override def _passthroughFields = _underlying_PlayCardsResponse._passthroughFields
   }
 }
 
 trait PlayCardsResponse
   extends ThriftStruct
-  with scala.Product6[String, Boolean, Long, com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse, Long, com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]
+  with scala.Product6[String, Boolean, Long, Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse], Long, Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]]
   with java.io.Serializable
 {
   import PlayCardsResponse._
@@ -624,9 +628,9 @@ trait PlayCardsResponse
   def code: String
   def isFinished: Boolean
   def memberId0: Long
-  def turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
+  def turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]
   def memberId2: Long
-  def turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse
+  def turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse]
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
@@ -673,8 +677,8 @@ trait PlayCardsResponse
                 _root_.scala.None
               }
             case 4 =>
-              if (turn0 ne null) {
-                writeTurn0Value(turn0, _oprot)
+              if (turn0.isDefined) {
+                writeTurn0Value(turn0.get, _oprot)
                 _root_.scala.Some(PlayCardsResponse.Turn0Field)
               } else {
                 _root_.scala.None
@@ -687,8 +691,8 @@ trait PlayCardsResponse
                 _root_.scala.None
               }
             case 6 =>
-              if (turn2 ne null) {
-                writeTurn2Value(turn2, _oprot)
+              if (turn2.isDefined) {
+                writeTurn2Value(turn2.get, _oprot)
                 _root_.scala.Some(PlayCardsResponse.Turn2Field)
               } else {
                 _root_.scala.None
@@ -722,9 +726,9 @@ trait PlayCardsResponse
     var code: String = this.code
     var isFinished: Boolean = this.isFinished
     var memberId0: Long = this.memberId0
-    var turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn0
+    var turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn0
     var memberId2: Long = this.memberId2
-    var turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn2
+    var turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn2
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
@@ -734,11 +738,11 @@ trait PlayCardsResponse
       case 3 =>
         memberId0 = readMemberId0Value(_blob.read)
       case 4 =>
-        turn0 = readTurn0Value(_blob.read)
+        turn0 = _root_.scala.Some(readTurn0Value(_blob.read))
       case 5 =>
         memberId2 = readMemberId2Value(_blob.read)
       case 6 =>
-        turn2 = readTurn2Value(_blob.read)
+        turn2 = _root_.scala.Some(readTurn2Value(_blob.read))
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
@@ -761,9 +765,9 @@ trait PlayCardsResponse
     var code: String = this.code
     var isFinished: Boolean = this.isFinished
     var memberId0: Long = this.memberId0
-    var turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn0
+    var turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn0
     var memberId2: Long = this.memberId2
-    var turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn2
+    var turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn2
 
     _fieldId match {
       case 1 =>
@@ -773,11 +777,11 @@ trait PlayCardsResponse
       case 3 =>
         memberId0 = 0L
       case 4 =>
-        turn0 = null
+        turn0 = _root_.scala.None
       case 5 =>
         memberId2 = 0L
       case 6 =>
-        turn2 = null
+        turn2 = _root_.scala.None
       case _ =>
     }
     new Immutable(
@@ -815,9 +819,9 @@ trait PlayCardsResponse
     if (code ne null) writeCodeField(code, _oprot)
     writeIsFinishedField(isFinished, _oprot)
     writeMemberId0Field(memberId0, _oprot)
-    if (turn0 ne null) writeTurn0Field(turn0, _oprot)
+    if (turn0.isDefined) writeTurn0Field(turn0.get, _oprot)
     writeMemberId2Field(memberId2, _oprot)
-    if (turn2 ne null) writeTurn2Field(turn2, _oprot)
+    if (turn2.isDefined) writeTurn2Field(turn2.get, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -829,9 +833,9 @@ trait PlayCardsResponse
     code: String = this.code,
     isFinished: Boolean = this.isFinished,
     memberId0: Long = this.memberId0,
-    turn0: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn0,
+    turn0: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn0,
     memberId2: Long = this.memberId2,
-    turn2: com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse = this.turn2,
+    turn2: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameTurnResponse] = this.turn2,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
   ): PlayCardsResponse =
     new Immutable(

@@ -2,11 +2,13 @@ package com.jxjxgo.gamecenter.repo
 
 import java.sql.{Connection, PreparedStatement, Timestamp}
 
+import com.jxjxgo.gamecenter.domain.{PlayTable, Room, Seat}
 import com.jxjxgo.gamecenter.enumnate.{GameStatus, RoomStatus, SeatStatus, TableStatus}
 import com.jxjxgo.mysql.connection.DBComponent
 import org.slf4j.{Logger, LoggerFactory}
 import slick.jdbc.JdbcBackend
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -21,9 +23,9 @@ trait TowVsOneRepository extends Tables {
     TmGame += game
   }
 
-  def getRoomConfig(gameType: Int): Option[TmRoomConfigRow] = {
+  def getRoomConfig(gameType: Int, deviceType: Int): Option[TmRoomConfigRow] = {
     val run: Future[Option[TmRoomConfigRow]] = db.run {
-      TmRoomConfig.filter(_.gameType === gameType).result.headOption
+      TmRoomConfig.filter(r => (r.gameType === gameType && r.deviceType === deviceType)).result.headOption
     }
     Await.result(run, Duration.Inf)
   }
@@ -46,7 +48,7 @@ trait TowVsOneRepository extends Tables {
     }, Duration.Inf)
   }
 
-  def sitDown(traceId: String, memberId: Long, room: TmRoomRow, table: TmTableRow, seat: TmSeatRow): Boolean = {
+  def sitDown(traceId: String, memberId: Long, room: Room, table: PlayTable, seat: Seat): Boolean = {
     var session: JdbcBackend#SessionDef = null
     var conn: Connection = null
     try {

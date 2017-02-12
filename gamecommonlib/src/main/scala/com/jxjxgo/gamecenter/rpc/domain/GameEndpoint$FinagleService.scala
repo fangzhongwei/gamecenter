@@ -282,7 +282,7 @@ class GameEndpoint$FinagleService(
         iface.joinGame(args.traceId, args.request)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.JoinGameResponse =>
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
         reply("joinGame", seqid, JoinGame.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)

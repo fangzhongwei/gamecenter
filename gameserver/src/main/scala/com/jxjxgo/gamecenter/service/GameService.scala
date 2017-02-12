@@ -3,12 +3,14 @@ package com.jxjxgo.gamecenter.service
 import java.sql.Timestamp
 import javax.inject.Inject
 
+import com.jxjxgo.account.rpc.domain.{AccountEndpoint, DiamondAccountResponse}
+import com.jxjxgo.common.exception.ErrorCode
 import com.jxjxgo.common.kafka.template.ProducerTemplate
 import com.jxjxgo.gamecenter.enumnate.{GameStatus, SeatStatus}
-import com.jxjxgo.gamecenter.repo.{TmChannelAddressRow, TmOnlineRecordRow, TmSeatRow, TowVsOneRepository}
+import com.jxjxgo.gamecenter.repo.{TowVsOneRepository}
 import com.jxjxgo.gamecenter.rpc.domain._
 import com.jxjxgo.sso.rpc.domain.SSOServiceEndpoint
-import com.twitter.util.Future
+import com.twitter.util.{Await, Future}
 import org.slf4j.{Logger, LoggerFactory}
 
 /**
@@ -23,14 +25,14 @@ trait GameService {
 
   def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse
 
-  def joinGame(traceId: String, request: JoinGameRequest): JoinGameResponse
+  def joinGame(traceId: String, request: JoinGameRequest): GameBaseResponse
 
   def playCards(traceId: String, request: PlayCardsRequest): PlayCardsResponse
 
   def setGameStatus(traceId: String, memberId: Long, gameStatus: String): GameBaseResponse
 }
 
-class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], producerTemplate: ProducerTemplate, towVsOneRepository: TowVsOneRepository) extends GameService {
+class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], accountEndpoint: AccountEndpoint[Future], producerTemplate: ProducerTemplate, towVsOneRepository: TowVsOneRepository) extends GameService {
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   // game center, ddz , key:memberId, value:game status
@@ -40,7 +42,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], pr
   private[this] val addressPre = "gc.ddz.mi-addr:"
   private[this] val addressExpireSeconds = 24 * 60 * 60
 
-  implicit def convert(s: TmSeatRow): GameTurnResponse = {
+  implicit def convert(s: towVsOneRepository.TmSeatRow): GameTurnResponse = {
     GameTurnResponse(gameId = s.gameId, gameType = s.gameType)
   }
 
@@ -65,8 +67,30 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], pr
     }
   }
 
-  override def joinGame(traceId: String, request: JoinGameRequest): JoinGameResponse = {
-    null
+  override def joinGame(traceId: String, request: JoinGameRequest): GameBaseResponse = {
+    val memberId: Long = request.memberId
+    val deviceType: Int = request.deviceType
+    val gameType: Int = request.gameType
+
+    val accountResponse: DiamondAccountResponse = Await.result(accountEndpoint.getAccount(traceId, memberId, deviceType))
+
+    towVsOneRepository.getRoomConfig(gameType, deviceType) match {
+      case Some(config) =>
+        val balance: Int = accountResponse.amount
+
+        balance < config.minDiamondAmount match {
+          case true => GameBaseResponse(code = ErrorCode.EC_GAME_NOT_ENOUGH_DIAMOND.getCode)
+          case false => balance > config.maxDiamondAmount match {
+            case true => GameBaseResponse(code = ErrorCode.EC_GAME_DIAMOND_TOO_MUCH.getCode)
+            case false =>
+              producerTemplate.send(config.topic, null)
+              GameBaseResponse("0")
+          }
+        }
+
+      case None =>
+        GameBaseResponse(code = ErrorCode.EC_GC_CONFIG_ERROR.getCode)
+    }
   }
 
   override def playCards(traceId: String, request: PlayCardsRequest): PlayCardsResponse = {
@@ -79,7 +103,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], pr
 
   override def saveChannelAddress(traceId: String, memberId: Long, host: String, addressType: String): GameBaseResponse = {
     val timestamp: Timestamp = new Timestamp(System.currentTimeMillis())
-    towVsOneRepository.updateOrInsertChannelAddress(TmChannelAddressRow(memberId, host, "rpc", timestamp, timestamp))
+    towVsOneRepository.updateOrInsertChannelAddress(towVsOneRepository.TmChannelAddressRow(memberId, host, "rpc", timestamp, timestamp))
     GameBaseResponse("0")
   }
 
@@ -94,7 +118,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], pr
   }
 
   override def playerOnline(traceId: String, r: OnlineRequest): GameBaseResponse = {
-    towVsOneRepository.createOnlineRecord(TmOnlineRecordRow(r.socketUuid, r.deviceType.toShort, r.fingerPrint, r.memberId, r.ip, r.host, new Timestamp(System.currentTimeMillis()), None, true))
+    towVsOneRepository.createOnlineRecord(towVsOneRepository.TmOnlineRecordRow(r.socketUuid, r.deviceType.toShort, r.fingerPrint, r.memberId, r.ip, r.host, new Timestamp(System.currentTimeMillis()), None, true))
     GameBaseResponse("0")
   }
 }
