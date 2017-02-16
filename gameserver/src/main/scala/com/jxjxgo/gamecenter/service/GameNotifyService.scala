@@ -1,50 +1,70 @@
 package com.jxjxgo.gamecenter.service
 
-import java.sql.Timestamp
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
-import akka.actor.ActorRef
 import com.jxjxgo.common.redis.RedisClientTemplate
 import com.jxjxgo.gamecenter.domain.Seat
-import com.jxjxgo.gamecenter.enumnate.GameStatus
-import com.jxjxgo.gamecenter.helper.CardsHelper
 import com.jxjxgo.gamecenter.repo.TowVsOneRepository
-import com.jxjxgo.memberber.rpc.domain.{MemberEndpoint, MemberResponse}
-import com.twitter.util.{Await, Future}
+import com.jxjxgo.gamegateway.rpc.domain.{GameGatewayEndpoint, SocketResponse}
+import com.jxjxgo.memberber.rpc.domain.MemberEndpoint
+import com.twitter.finagle.Thrift
+import com.twitter.util.Future
 import org.slf4j.{Logger, LoggerFactory}
-
-import scala.collection.mutable.StringBuilder
 
 /**
   * Created by fangzhongwei on 2016/12/20.
   */
 trait GameNotifyService {
-  def getOnlineMemberAkkaAddress(memberId: Long): Option[String]
-
-  def createGame(traceId: String, gameType: Int, seat1: Seat, seat2: Seat, seat3: Seat)
+  def notifySeatInfo(seat: Seat)
 }
 
 class GameNotifyServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, redisClientTemplate: RedisClientTemplate, memberClientService: MemberEndpoint[Future]) extends GameNotifyService {
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private[this] val akkaAddressPre = "gc.ddz.mi-addr:"
-  private[this] var actor: ActorRef = _
+  private[this] val map: ConcurrentHashMap[String, GameGatewayEndpoint[Future]] = new ConcurrentHashMap[String, GameGatewayEndpoint[Future]]()
 
-  implicit def gameStatus2Byte(gameStatus: GameStatus): Short = gameStatus.getCode
+  implicit def long2String(lo: Long): String = lo.toString
 
-  def notifyGameStart(traceId: String, seat: Seat, game: towVsOneRepository.TmGameRow, gameIndex: Int, cards: List[Int], dzCards: List[Int], previousNickName: String, nextNickName: String): Unit = {
+  implicit def int2String(in: Int): String = in.toString
 
+  implicit def short2String(sh: Short): String = sh.toString
+
+  implicit def bool2String(bo: Boolean): String = bo.toString
+
+  override def notifySeatInfo(s: Seat): Unit = {
+    val record: towVsOneRepository.TmOnlineRecordRow = towVsOneRepository.getOnlineRecord(s.socketId)
+    val gameGatewayEndpoint: GameGatewayEndpoint[Future] = thriftClient(record.rpcHost)
+
+    //    1: string code,
+    //    2: string action,
+    //    3: i64 gameId = 0,
+    //    4: i32 gameType = 0,
+    //    5: i32 deviceType = 0,
+    //    6: string cards = "",
+    //    7: string landlordCards = "",
+    //    8: i32 baseAmount = 0,
+    //    9: i32 multiples = 0,
+    //    10: string previousNickname = "",
+    //    11: i32 previousCardsCount = 0,
+    //    12: string nextNickname = "",
+    //    13: i32 nextCardsCount = 0,
+    //    14: bool choosingLandlord = false,
+    //    15: bool landlord = false,
+    //    16: bool turnToPlay = false,
+    //    17: string fingerPrint = "",
+
+    gameGatewayEndpoint.push(s.traceId, SocketResponse("0", "seatWatch", s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.choosingLandlord, s.landlord, s.turnToPlay, s.fingerPrint, "", "", "", "", ""))
   }
 
-  override def createGame(traceId: String, gameType: Int, seat1: Seat, seat2: Seat, seat3: Seat): Unit = {
-
-
-//    notifyGameStart(seat1.traceId, seat1, game, 1, player1CardsList, dzCardsList, memberResponse3.nickName, memberResponse2.nickName)
-//    notifyGameStart(seat2.traceId, seat2, game, 2, player2CardsList, dzCardsList, memberResponse1.nickName, memberResponse3.nickName)
-//    notifyGameStart(seat3.traceId, seat3, game, 3, player3CardsList, dzCardsList, memberResponse2.nickName, memberResponse1.nickName)
+  def thriftClient(rpcHost: String): GameGatewayEndpoint[Future] = {
+    var endpoint: GameGatewayEndpoint[Future] = map.get(rpcHost)
+    endpoint == null match {
+      case true => endpoint = Thrift.client.newIface[GameGatewayEndpoint[Future]](rpcHost)
+        map.put(rpcHost, endpoint)
+      case false =>
+    }
+    endpoint
   }
 
-  override def getOnlineMemberAkkaAddress(memberId: Long): Option[String] = {
-    redisClientTemplate.getString(new StringBuilder(akkaAddressPre).append(memberId).toString)
-  }
 }

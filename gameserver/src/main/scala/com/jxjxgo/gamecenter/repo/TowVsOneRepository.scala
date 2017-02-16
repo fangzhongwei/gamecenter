@@ -16,7 +16,6 @@ import scala.concurrent.{Await, Future}
 trait TowVsOneRepository extends Tables {
   this: DBComponent =>
 
-
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   import profile.api._
@@ -219,6 +218,12 @@ trait TowVsOneRepository extends Tables {
   def getSeat(seatId: Long):TmSeatRow = {
     Await.result(db.run {
       TmSeat.filter(_.id === seatId).result.head
+    }, Duration.Inf)
+  }
+
+  def getOnlineRecord(socketId: Long): TmOnlineRecordRow = {
+    Await.result(db.run {
+      TmOnlineRecord.filter(_.socketId === socketId).result.head
     }, Duration.Inf)
   }
 

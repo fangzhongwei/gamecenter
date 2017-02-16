@@ -18,6 +18,7 @@ import com.twitter.util.{Await, Future}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Promise
 
 /**
   * Created by fangzhongwei on 2016/12/19.
@@ -98,9 +99,14 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
 
   }
 
-  def notifySeat(seatId: Long) = {
-    val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
-    gameNotifyService.notifyClient(seat)
+  def notifySeat(seatId: Long): scala.concurrent.Future[Unit] = {
+    val promise: Promise[Unit] = Promise[Unit]()
+    scala.concurrent.Future {
+      val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
+      gameNotifyService.notifySeatInfo(seat)
+      promise.success()
+    }
+    promise.future
   }
 
   def findSeat(traceId: String, m: JoinGameMessage): Unit = {

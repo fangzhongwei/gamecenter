@@ -7,6 +7,7 @@ import com.google.inject.{AbstractModule, Guice, TypeLiteral}
 import com.jxjxgo.account.rpc.domain.AccountEndpoint
 import com.jxjxgo.common.helper.ConfigHelper
 import com.jxjxgo.common.kafka.template.{ConsumerTemplate, ConsumerTemplateImpl, ProducerTemplate, ProducerTemplateImpl}
+import com.jxjxgo.common.mq.service.ConsumerService
 import com.jxjxgo.common.redis.{RedisClientTemplate, RedisClientTemplateImpl}
 import com.jxjxgo.gamecenter.repo.{TowVsOneRepository, TowVsOneRepositoryImpl}
 import com.jxjxgo.gamecenter.service._
@@ -32,6 +33,7 @@ object ApplicationServer extends App {
         bind(classOf[RedisClientTemplate]).to(classOf[RedisClientTemplateImpl]).asEagerSingleton()
         bind(classOf[ProducerTemplate]).to(classOf[ProducerTemplateImpl]).asEagerSingleton()
         bind(classOf[ConsumerTemplate]).to(classOf[ConsumerTemplateImpl]).asEagerSingleton()
+        bind(classOf[ConsumerService]).to(classOf[CoordinateServiceImpl]).asEagerSingleton()
         bind(classOf[TowVsOneRepository]).to(classOf[TowVsOneRepositoryImpl]).asEagerSingleton()
         bind(new TypeLiteral[MemberEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[MemberEndpoint[Future]](config.getString("member.thrift.host.port")))
         bind(new TypeLiteral[AccountEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[AccountEndpoint[Future]](config.getString("account.thrift.host.port")))
@@ -42,7 +44,6 @@ object ApplicationServer extends App {
       }
     })
 
-    injector.getInstance(classOf[ProducerTemplate]).init
 
     val consumerTemplate: ConsumerTemplate = injector.getInstance(classOf[ConsumerTemplate])
     consumerTemplate.init
@@ -52,5 +53,8 @@ object ApplicationServer extends App {
     consumerTemplate.consume(config.getString("kafka.topic.game.join.T1100"))
     consumerTemplate.consume(config.getString("kafka.topic.game.join.T1200"))
     consumerTemplate.consume(config.getString("kafka.topic.game.join.T1500"))
+
+
+    injector.getInstance(classOf[ProducerTemplate]).init
   }
 }

@@ -6,7 +6,7 @@ import scala.util.Random
   * Created by fangzhongwei on 2016/12/21.
   */
 object CardsHelper {
-  private[this] val cards = (101 to 113).toList ::: (201 to 213).toList ::: (301 to 313).toList ::: (401 to 413).toList ::: (1001 to 1002).toList
+  private[this] val cards = (103 to 115).toList ::: (203 to 215).toList ::: (303 to 315).toList ::: (403 to 415).toList ::: (516 to 517).toList
 
   def initCards(): (List[Int], List[Int], List[Int], List[Int]) = {
     val shuffledCards: List[Int] = Random.shuffle(cards)

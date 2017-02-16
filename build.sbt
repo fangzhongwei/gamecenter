@@ -17,6 +17,13 @@ lazy val commonSettings = Seq(
   )
 )
 
+lazy val gamegatewaycommonlib = (project in file("gamegatewaycommonlib")).settings(commonSettings: _*).settings(
+  organization := "com.jxjxgo.gamegateway",
+  name := """gamegatewaycommonlib""",
+  libraryDependencies ++= Seq(
+  )
+)
+
 lazy val gamecommonlib = (project in file("gamecommonlib")).settings(commonSettings: _*).settings(
   name := """gamecommonlib""",
   libraryDependencies ++= Seq(
@@ -31,6 +38,7 @@ lazy val gameserver = (project in file("gameserver")).settings(commonSettings: _
     "com.jxjxgo.common" % "common-error_2.11" % "1.0",
     "com.jxjxgo.gamecenter" % "gamecommonlib_2.11" % "1.0",
     "com.jxjxgo.member" % "membercommonlib_2.11" % "1.0",
-    "com.jxjxgo.account" % "accountcommonlib_2.11" % "1.0"
+    "com.jxjxgo.account" % "accountcommonlib_2.11" % "1.0",
+    "com.jxjxgo.gamegateway" % "gamegatewaycommonlib_2.11" % "1.0"
   )
 )

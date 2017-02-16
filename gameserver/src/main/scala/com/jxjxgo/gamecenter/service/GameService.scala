@@ -42,7 +42,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
   private[this] val addressExpireSeconds = 24 * 60 * 60
 
   implicit def convert(s: towVsOneRepository.TmSeatRow): GameTurnResponse = {
-    GameTurnResponse(s.gameId, s.gameType, s.cards, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.choosingLandlord, s.landlord, s.turnToPlay)
+    GameTurnResponse(s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.choosingLandlord, s.landlord, s.turnToPlay)
   }
 
   override def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse = {
