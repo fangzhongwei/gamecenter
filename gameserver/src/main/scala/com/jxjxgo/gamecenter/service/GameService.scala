@@ -83,12 +83,14 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
             case true => GameBaseResponse(code = ErrorCode.EC_GAME_DIAMOND_TOO_MUCH.getCode)
             case false =>
               val game: JoinGameMessage = JoinGameMessage(traceId, request.socketId, request.ip, deviceType, request.fingerPrint, memberId, gameType)
+              logger.info(s"send join message:$game")
               producerTemplate.send(config.topic, game.toByteArray)
               GameBaseResponse("0")
           }
         }
 
       case None =>
+        logger.error(s"game config not found for type : $gameType")
         GameBaseResponse(code = ErrorCode.EC_GC_CONFIG_ERROR.getCode)
     }
   }

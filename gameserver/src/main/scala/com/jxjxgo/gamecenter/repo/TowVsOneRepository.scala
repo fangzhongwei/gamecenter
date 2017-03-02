@@ -138,20 +138,18 @@ trait TowVsOneRepository extends Tables {
   }
 
   private def seatSitDown(conn: Connection, seatId: Long, m: JoinGameMessage, newStatus: SeatStatus, status: Short, traceId: String): Int = {
-    val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, device_type = ?, game_type = ?, base_amount = ?, member_id = ?, trace_id = ?, device_type = ?, finger_print = ?, game_type = ?, socket_id = ? WHERE id = ? AND status = ?")
+    val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, device_type = ?, game_type = ?, base_amount = ?, member_id = ?, trace_id = ?, finger_print = ?, socket_id = ? WHERE id = ? AND status = ?")
     prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setInt(2, m.deviceType)
     prepareStatement.setInt(3, m.gameType)
     prepareStatement.setInt(4, m.baseAmount)
     prepareStatement.setLong(5, m.memberId)
     prepareStatement.setString(6, traceId)
-    prepareStatement.setInt(7, m.deviceType)
-    prepareStatement.setString(8, m.fingerPrint)
-    prepareStatement.setInt(9, m.gameType)
-    prepareStatement.setLong(10, m.socketId)
+    prepareStatement.setString(7, m.fingerPrint)
+    prepareStatement.setLong(8, m.socketId)
 
-    prepareStatement.setLong(11, seatId)
-    prepareStatement.setShort(12, status)
+    prepareStatement.setLong(9, seatId)
+    prepareStatement.setShort(10, status)
     prepareStatement.executeUpdate()
   }
 

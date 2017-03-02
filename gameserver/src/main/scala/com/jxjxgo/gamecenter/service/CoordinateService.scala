@@ -20,6 +20,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Promise
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
   * Created by fangzhongwei on 2016/12/19.
   */
@@ -204,8 +206,10 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
     val iterator: Iterator[Array[Byte]] = list.iterator
     while (iterator.hasNext) {
       try {
+        logger.info("receive one join message.")
         val array: Array[Byte] = iterator.next()
         val m: JoinGameMessage = JoinGameMessage.parseFrom(array)
+        logger.info(s"receive join message:$m")
         findSeat(m.traceId, m)
       } catch {
         case ex: Exception => {

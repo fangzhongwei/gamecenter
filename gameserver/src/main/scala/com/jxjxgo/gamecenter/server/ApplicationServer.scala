@@ -13,6 +13,7 @@ import com.jxjxgo.gamecenter.repo.{TowVsOneRepository, TowVsOneRepositoryImpl}
 import com.jxjxgo.gamecenter.service._
 import com.jxjxgo.memberber.rpc.domain.MemberEndpoint
 import com.jxjxgo.scrooge.thrift.template.{ScroogeThriftServerTemplate, ScroogeThriftServerTemplateImpl}
+import com.jxjxgo.sso.rpc.domain.SSOServiceEndpoint
 import com.twitter.finagle.Thrift
 import com.twitter.scrooge.ThriftService
 import com.twitter.util.Future
@@ -37,8 +38,10 @@ object ApplicationServer extends App {
         bind(classOf[TowVsOneRepository]).to(classOf[TowVsOneRepositoryImpl]).asEagerSingleton()
         bind(new TypeLiteral[MemberEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[MemberEndpoint[Future]](config.getString("member.thrift.host.port")))
         bind(new TypeLiteral[AccountEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[AccountEndpoint[Future]](config.getString("account.thrift.host.port")))
+        bind(new TypeLiteral[SSOServiceEndpoint[Future]]() {}).toInstance(Thrift.client.newIface[SSOServiceEndpoint[Future]](config.getString("sso.thrift.host.port")))
         bind(classOf[CoordinateService]).to(classOf[CoordinateServiceImpl]).asEagerSingleton()
         bind(classOf[GameService]).to(classOf[GameServiceImpl]).asEagerSingleton()
+        bind(classOf[GameNotifyService]).to(classOf[GameNotifyServiceImpl]).asEagerSingleton()
         bind(classOf[ThriftService]).to(classOf[GameEndpointImpl]).asEagerSingleton()
         bind(classOf[ScroogeThriftServerTemplate]).to(classOf[ScroogeThriftServerTemplateImpl]).asEagerSingleton()
       }
@@ -46,15 +49,15 @@ object ApplicationServer extends App {
 
 
     val consumerTemplate: ConsumerTemplate = injector.getInstance(classOf[ConsumerTemplate])
-    consumerTemplate.init
-    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1010"))
-    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1020"))
-    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1050"))
-    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1100"))
-    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1200"))
-    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1500"))
+    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1010"))//game.join.T1010
+//    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1020"))
+//    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1050"))
+//    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1100"))
+//    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1200"))
+//    consumerTemplate.consume(config.getString("kafka.topic.game.join.T1500"))
 
 
     injector.getInstance(classOf[ProducerTemplate]).init
+    injector.getInstance(classOf[ScroogeThriftServerTemplate]).init
   }
 }
