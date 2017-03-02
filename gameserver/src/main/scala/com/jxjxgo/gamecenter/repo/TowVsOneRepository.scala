@@ -45,19 +45,19 @@ trait TowVsOneRepository extends Tables {
 
   def getWaitingRoom(minRoomId: Long, maxRoomId: Long): Option[TmRoomRow] = {
     Await.result(db.run {
-      TmRoom.sortBy(_.id.asc).take(1).filter(r => (r.id between(minRoomId, maxRoomId)) && r.status === RoomStatus.Waiting.getCode.toShort).result.headOption
+      TmRoom.sortBy(_.id.asc).filter(r => (r.id between(minRoomId, maxRoomId)) && r.status === RoomStatus.Waiting.getCode.toShort).take(1).result.headOption
     }, Duration.Inf)
   }
 
   def getWaitingTable(minTableId: Long, maxTableId: Long): Option[TmTableRow] = {
     Await.result(db.run {
-      TmTable.sortBy(_.id.asc).take(1).filter(t => (t.id between(minTableId, maxTableId)) && (t.status inSet (Set(TableStatus.Idle.getCode.toShort, TableStatus.Waiting.getCode.toShort)))).result.headOption
+      TmTable.sortBy(_.id.asc).filter(t => (t.id between(minTableId, maxTableId)) && (t.status inSet (Set(TableStatus.Idle.getCode.toShort, TableStatus.Waiting.getCode.toShort)))).take(1).result.headOption
     }, Duration.Inf)
   }
 
   def getIdleSeat(minSeatId: Long, maxSeatId: Long): Option[TmSeatRow] = {
     Await.result(db.run {
-      TmSeat.sortBy(_.id.asc).take(1).filter(r => (r.id between(minSeatId, maxSeatId)) && r.status === SeatStatus.Idle.getCode.toShort).result.headOption
+      TmSeat.sortBy(_.id.asc).filter(r => (r.id between(minSeatId, maxSeatId)) && r.status === SeatStatus.Idle.getCode.toShort).take(1).result.headOption
     }, Duration.Inf)
   }
 
@@ -160,9 +160,9 @@ trait TowVsOneRepository extends Tables {
     prepareStatement.executeUpdate()
   }
 
-  def getSeatsByRange(minSeatId: Long, maxSeatId: Long): Seq[TmSeatRow] = {
+  def getWaitingSeatsByRange(minSeatId: Long, maxSeatId: Long): Seq[TmSeatRow] = {
     val run: Future[Seq[TmSeatRow]] = db.run {
-      TmSeat.sortBy(_.id.asc).filter { r => (r.id.between(minSeatId, maxSeatId) && r.status === SeatStatus.Playing.getCode.toShort) }.result
+      TmSeat.sortBy(_.id.asc).filter { r => (r.id.between(minSeatId, maxSeatId) && r.status === SeatStatus.WaitingStart.getCode.toShort) }.result
     }
     Await.result(run, Duration.Inf)
   }

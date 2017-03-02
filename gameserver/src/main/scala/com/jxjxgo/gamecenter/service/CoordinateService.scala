@@ -56,7 +56,7 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
   def preparePlay(traceId: String, room: Room, table: PlayTable, m: JoinGameMessage) = {
     var shouldStartGame = true
 
-    val seats: Seq[towVsOneRepository.TmSeatRow] = towVsOneRepository.getSeatsByRange(table.minSeatId, table.maxSeatId)
+    val seats: Seq[towVsOneRepository.TmSeatRow] = towVsOneRepository.getWaitingSeatsByRange(table.minSeatId, table.maxSeatId)
     var count: Int = seats.size
     seats.foreach {
       seat =>
@@ -204,9 +204,9 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
 
   override def consume(list: ListBuffer[Array[Byte]]): Unit = {
     val iterator: Iterator[Array[Byte]] = list.iterator
+    logger.info(s"receive ${list.size} join message.")
     while (iterator.hasNext) {
       try {
-        logger.info("receive one join message.")
         val array: Array[Byte] = iterator.next()
         val m: JoinGameMessage = JoinGameMessage.parseFrom(array)
         logger.info(s"receive join message:$m")
