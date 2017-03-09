@@ -27,8 +27,20 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
   val Struct = new TStruct("PlayCardsRequest")
   val MemberIdField = new TField("memberId", TType.I64, 1)
   val MemberIdFieldManifest = implicitly[Manifest[Long]]
-  val CardsField = new TField("cards", TType.STRING, 2)
-  val CardsFieldManifest = implicitly[Manifest[String]]
+  val GameIdField = new TField("gameId", TType.I64, 2)
+  val GameIdFieldManifest = implicitly[Manifest[Long]]
+  val SeatIdField = new TField("seatId", TType.I64, 3)
+  val SeatIdFieldManifest = implicitly[Manifest[Long]]
+  val SeqInGameField = new TField("seqInGame", TType.I32, 4)
+  val SeqInGameFieldManifest = implicitly[Manifest[Int]]
+  val CardsTypeField = new TField("cardsType", TType.STRING, 5)
+  val CardsTypeFieldManifest = implicitly[Manifest[String]]
+  val KeysField = new TField("keys", TType.LIST, 6)
+  val KeysFieldManifest = implicitly[Manifest[Seq[Int]]]
+  val PlayPointsField = new TField("playPoints", TType.LIST, 7)
+  val PlayPointsFieldManifest = implicitly[Manifest[Seq[Int]]]
+  val HandPointsField = new TField("handPoints", TType.LIST, 8)
+  val HandPointsFieldManifest = implicitly[Manifest[Seq[Int]]]
 
   /**
    * Field information in declaration order.
@@ -45,12 +57,72 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      CardsField,
+      GameIdField,
       false,
       false,
-      CardsFieldManifest,
+      GameIdFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      SeatIdField,
+      false,
+      false,
+      SeatIdFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      SeqInGameField,
+      false,
+      false,
+      SeqInGameFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      CardsTypeField,
+      false,
+      false,
+      CardsTypeFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      KeysField,
+      false,
+      false,
+      KeysFieldManifest,
+      _root_.scala.None,
+      _root_.scala.Some(implicitly[Manifest[Int]]),
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      PlayPointsField,
+      false,
+      false,
+      PlayPointsFieldManifest,
+      _root_.scala.None,
+      _root_.scala.Some(implicitly[Manifest[Int]]),
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      HandPointsField,
+      false,
+      false,
+      HandPointsFieldManifest,
+      _root_.scala.None,
+      _root_.scala.Some(implicitly[Manifest[Int]]),
       immutable$Map.empty[String, String],
       immutable$Map.empty[String, String]
     )
@@ -72,10 +144,46 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
           val field = original.memberId
           field
         },
-      cards =
+      gameId =
         {
-          val field = original.cards
+          val field = original.gameId
           field
+        },
+      seatId =
+        {
+          val field = original.seatId
+          field
+        },
+      seqInGame =
+        {
+          val field = original.seqInGame
+          field
+        },
+      cardsType =
+        {
+          val field = original.cardsType
+          field
+        },
+      keys =
+        {
+          val field = original.keys
+          field.map { field =>
+            field
+          }
+        },
+      playPoints =
+        {
+          val field = original.playPoints
+          field.map { field =>
+            field
+          }
+        },
+      handPoints =
+        {
+          val field = original.handPoints
+          field.map { field =>
+            field
+          }
         }
     )
 
@@ -86,7 +194,13 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
   private[this] def lazyDecode(_iprot: LazyTProtocol): PlayCardsRequest = {
 
     var memberId: Long = 0L
-    var cardsOffset: Int = -1
+    var gameId: Long = 0L
+    var seatId: Long = 0L
+    var seqInGame: Int = 0
+    var cardsTypeOffset: Int = -1
+    var keys: Seq[Int] = Seq[Int]()
+    var playPoints: Seq[Int] = Seq[Int]()
+    var handPoints: Seq[Int] = Seq[Int]()
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -115,13 +229,97 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
             }
           case 2 =>
             _field.`type` match {
+              case TType.I64 =>
+    
+                gameId = readGameIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'gameId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 3 =>
+            _field.`type` match {
+              case TType.I64 =>
+    
+                seatId = readSeatIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'seatId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 4 =>
+            _field.`type` match {
+              case TType.I32 =>
+    
+                seqInGame = readSeqInGameValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I32
+                throw new TProtocolException(
+                  "Received wrong type for field 'seqInGame' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 5 =>
+            _field.`type` match {
               case TType.STRING =>
-                cardsOffset = _iprot.offsetSkipString
+                cardsTypeOffset = _iprot.offsetSkipString
     
               case _actualType =>
                 val _expectedType = TType.STRING
                 throw new TProtocolException(
-                  "Received wrong type for field 'cards' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'cardsType' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 6 =>
+            _field.`type` match {
+              case TType.LIST =>
+    
+                keys = readKeysValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.LIST
+                throw new TProtocolException(
+                  "Received wrong type for field 'keys' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 7 =>
+            _field.`type` match {
+              case TType.LIST =>
+    
+                playPoints = readPlayPointsValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.LIST
+                throw new TProtocolException(
+                  "Received wrong type for field 'playPoints' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 8 =>
+            _field.`type` match {
+              case TType.LIST =>
+    
+                handPoints = readHandPointsValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.LIST
+                throw new TProtocolException(
+                  "Received wrong type for field 'handPoints' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -143,7 +341,13 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       _start_offset,
       _iprot.offset,
       memberId,
-      cardsOffset,
+      gameId,
+      seatId,
+      seqInGame,
+      cardsTypeOffset,
+      keys,
+      playPoints,
+      handPoints,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -159,7 +363,13 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
 
   private[this] def eagerDecode(_iprot: TProtocol): PlayCardsRequest = {
     var memberId: Long = 0L
-    var cards: String = ""
+    var gameId: Long = 0L
+    var seatId: Long = 0L
+    var seqInGame: Int = 0
+    var cardsType: String = ""
+    var keys: Seq[Int] = Seq[Int]()
+    var playPoints: Seq[Int] = Seq[Int]()
+    var handPoints: Seq[Int] = Seq[Int]()
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -185,12 +395,90 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
             }
           case 2 =>
             _field.`type` match {
+              case TType.I64 =>
+                gameId = readGameIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'gameId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 3 =>
+            _field.`type` match {
+              case TType.I64 =>
+                seatId = readSeatIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'seatId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 4 =>
+            _field.`type` match {
+              case TType.I32 =>
+                seqInGame = readSeqInGameValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I32
+                throw new TProtocolException(
+                  "Received wrong type for field 'seqInGame' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 5 =>
+            _field.`type` match {
               case TType.STRING =>
-                cards = readCardsValue(_iprot)
+                cardsType = readCardsTypeValue(_iprot)
               case _actualType =>
                 val _expectedType = TType.STRING
                 throw new TProtocolException(
-                  "Received wrong type for field 'cards' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'cardsType' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 6 =>
+            _field.`type` match {
+              case TType.LIST =>
+                keys = readKeysValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.LIST
+                throw new TProtocolException(
+                  "Received wrong type for field 'keys' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 7 =>
+            _field.`type` match {
+              case TType.LIST =>
+                playPoints = readPlayPointsValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.LIST
+                throw new TProtocolException(
+                  "Received wrong type for field 'playPoints' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 8 =>
+            _field.`type` match {
+              case TType.LIST =>
+                handPoints = readHandPointsValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.LIST
+                throw new TProtocolException(
+                  "Received wrong type for field 'handPoints' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -208,7 +496,13 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
 
     new Immutable(
       memberId,
-      cards,
+      gameId,
+      seatId,
+      seqInGame,
+      cardsType,
+      keys,
+      playPoints,
+      handPoints,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -218,14 +512,26 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
 
   def apply(
     memberId: Long = 0L,
-    cards: String = ""
+    gameId: Long = 0L,
+    seatId: Long = 0L,
+    seqInGame: Int = 0,
+    cardsType: String = "",
+    keys: Seq[Int] = Seq[Int](),
+    playPoints: Seq[Int] = Seq[Int](),
+    handPoints: Seq[Int] = Seq[Int]()
   ): PlayCardsRequest =
     new Immutable(
       memberId,
-      cards
+      gameId,
+      seatId,
+      seqInGame,
+      cardsType,
+      keys,
+      playPoints,
+      handPoints
     )
 
-  def unapply(_item: PlayCardsRequest): _root_.scala.Option[scala.Product2[Long, String]] = _root_.scala.Some(_item)
+  def unapply(_item: PlayCardsRequest): _root_.scala.Option[scala.Product8[Long, Long, Long, Int, String, Seq[Int], Seq[Int], Seq[Int]]] = _root_.scala.Some(_item)
 
 
   @inline private def readMemberIdValue(_iprot: TProtocol): Long = {
@@ -242,18 +548,192 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
     _oprot.writeI64(memberId_item)
   }
 
-  @inline private def readCardsValue(_iprot: TProtocol): String = {
-    _iprot.readString()
+  @inline private def readGameIdValue(_iprot: TProtocol): Long = {
+    _iprot.readI64()
   }
 
-  @inline private def writeCardsField(cards_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(CardsField)
-    writeCardsValue(cards_item, _oprot)
+  @inline private def writeGameIdField(gameId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(GameIdField)
+    writeGameIdValue(gameId_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeCardsValue(cards_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(cards_item)
+  @inline private def writeGameIdValue(gameId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeI64(gameId_item)
+  }
+
+  @inline private def readSeatIdValue(_iprot: TProtocol): Long = {
+    _iprot.readI64()
+  }
+
+  @inline private def writeSeatIdField(seatId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(SeatIdField)
+    writeSeatIdValue(seatId_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeSeatIdValue(seatId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeI64(seatId_item)
+  }
+
+  @inline private def readSeqInGameValue(_iprot: TProtocol): Int = {
+    _iprot.readI32()
+  }
+
+  @inline private def writeSeqInGameField(seqInGame_item: Int, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(SeqInGameField)
+    writeSeqInGameValue(seqInGame_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeSeqInGameValue(seqInGame_item: Int, _oprot: TProtocol): Unit = {
+    _oprot.writeI32(seqInGame_item)
+  }
+
+  @inline private def readCardsTypeValue(_iprot: TProtocol): String = {
+    _iprot.readString()
+  }
+
+  @inline private def writeCardsTypeField(cardsType_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(CardsTypeField)
+    writeCardsTypeValue(cardsType_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeCardsTypeValue(cardsType_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeString(cardsType_item)
+  }
+
+  @inline private def readKeysValue(_iprot: TProtocol): Seq[Int] = {
+    val _list = _iprot.readListBegin()
+    if (_list.size == 0) {
+      _iprot.readListEnd()
+      Nil
+    } else {
+      val _rv = new mutable$ArrayBuffer[Int](_list.size)
+      var _i = 0
+      while (_i < _list.size) {
+        _rv += {
+          _iprot.readI32()
+        }
+        _i += 1
+      }
+      _iprot.readListEnd()
+      _rv
+    }
+  }
+
+  @inline private def writeKeysField(keys_item: Seq[Int], _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(KeysField)
+    writeKeysValue(keys_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeKeysValue(keys_item: Seq[Int], _oprot: TProtocol): Unit = {
+    _oprot.writeListBegin(new TList(TType.I32, keys_item.size))
+    keys_item match {
+      case _: IndexedSeq[_] =>
+        var _i = 0
+        val _size = keys_item.size
+        while (_i < _size) {
+          val keys_item_element = keys_item(_i)
+          _oprot.writeI32(keys_item_element)
+          _i += 1
+        }
+      case _ =>
+        keys_item.foreach { keys_item_element =>
+          _oprot.writeI32(keys_item_element)
+        }
+    }
+    _oprot.writeListEnd()
+  }
+
+  @inline private def readPlayPointsValue(_iprot: TProtocol): Seq[Int] = {
+    val _list = _iprot.readListBegin()
+    if (_list.size == 0) {
+      _iprot.readListEnd()
+      Nil
+    } else {
+      val _rv = new mutable$ArrayBuffer[Int](_list.size)
+      var _i = 0
+      while (_i < _list.size) {
+        _rv += {
+          _iprot.readI32()
+        }
+        _i += 1
+      }
+      _iprot.readListEnd()
+      _rv
+    }
+  }
+
+  @inline private def writePlayPointsField(playPoints_item: Seq[Int], _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(PlayPointsField)
+    writePlayPointsValue(playPoints_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writePlayPointsValue(playPoints_item: Seq[Int], _oprot: TProtocol): Unit = {
+    _oprot.writeListBegin(new TList(TType.I32, playPoints_item.size))
+    playPoints_item match {
+      case _: IndexedSeq[_] =>
+        var _i = 0
+        val _size = playPoints_item.size
+        while (_i < _size) {
+          val playPoints_item_element = playPoints_item(_i)
+          _oprot.writeI32(playPoints_item_element)
+          _i += 1
+        }
+      case _ =>
+        playPoints_item.foreach { playPoints_item_element =>
+          _oprot.writeI32(playPoints_item_element)
+        }
+    }
+    _oprot.writeListEnd()
+  }
+
+  @inline private def readHandPointsValue(_iprot: TProtocol): Seq[Int] = {
+    val _list = _iprot.readListBegin()
+    if (_list.size == 0) {
+      _iprot.readListEnd()
+      Nil
+    } else {
+      val _rv = new mutable$ArrayBuffer[Int](_list.size)
+      var _i = 0
+      while (_i < _list.size) {
+        _rv += {
+          _iprot.readI32()
+        }
+        _i += 1
+      }
+      _iprot.readListEnd()
+      _rv
+    }
+  }
+
+  @inline private def writeHandPointsField(handPoints_item: Seq[Int], _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(HandPointsField)
+    writeHandPointsValue(handPoints_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeHandPointsValue(handPoints_item: Seq[Int], _oprot: TProtocol): Unit = {
+    _oprot.writeListBegin(new TList(TType.I32, handPoints_item.size))
+    handPoints_item match {
+      case _: IndexedSeq[_] =>
+        var _i = 0
+        val _size = handPoints_item.size
+        while (_i < _size) {
+          val handPoints_item_element = handPoints_item(_i)
+          _oprot.writeI32(handPoints_item_element)
+          _i += 1
+        }
+      case _ =>
+        handPoints_item.foreach { handPoints_item_element =>
+          _oprot.writeI32(handPoints_item_element)
+        }
+    }
+    _oprot.writeListEnd()
   }
 
 
@@ -270,15 +750,33 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
    */
   class Immutable(
       val memberId: Long,
-      val cards: String,
+      val gameId: Long,
+      val seatId: Long,
+      val seqInGame: Int,
+      val cardsType: String,
+      val keys: Seq[Int],
+      val playPoints: Seq[Int],
+      val handPoints: Seq[Int],
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends PlayCardsRequest {
     def this(
       memberId: Long = 0L,
-      cards: String = ""
+      gameId: Long = 0L,
+      seatId: Long = 0L,
+      seqInGame: Int = 0,
+      cardsType: String = "",
+      keys: Seq[Int] = Seq[Int](),
+      playPoints: Seq[Int] = Seq[Int](),
+      handPoints: Seq[Int] = Seq[Int]()
     ) = this(
       memberId,
-      cards,
+      gameId,
+      seatId,
+      seqInGame,
+      cardsType,
+      keys,
+      playPoints,
+      handPoints,
       Map.empty
     )
   }
@@ -293,7 +791,13 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       _start_offset: Int,
       _end_offset: Int,
       val memberId: Long,
-      cardsOffset: Int,
+      val gameId: Long,
+      val seatId: Long,
+      val seqInGame: Int,
+      cardsTypeOffset: Int,
+      val keys: Seq[Int],
+      val playPoints: Seq[Int],
+      val handPoints: Seq[Int],
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends PlayCardsRequest {
 
@@ -304,11 +808,11 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
       }
     }
 
-    lazy val cards: String =
-      if (cardsOffset == -1)
+    lazy val cardsType: String =
+      if (cardsTypeOffset == -1)
         ""
       else {
-        _proto.decodeString(_buf, cardsOffset)
+        _proto.decodeString(_buf, cardsTypeOffset)
       }
 
     /**
@@ -333,25 +837,43 @@ object PlayCardsRequest extends ThriftStructCodec3[PlayCardsRequest] {
   trait Proxy extends PlayCardsRequest {
     protected def _underlying_PlayCardsRequest: PlayCardsRequest
     override def memberId: Long = _underlying_PlayCardsRequest.memberId
-    override def cards: String = _underlying_PlayCardsRequest.cards
+    override def gameId: Long = _underlying_PlayCardsRequest.gameId
+    override def seatId: Long = _underlying_PlayCardsRequest.seatId
+    override def seqInGame: Int = _underlying_PlayCardsRequest.seqInGame
+    override def cardsType: String = _underlying_PlayCardsRequest.cardsType
+    override def keys: Seq[Int] = _underlying_PlayCardsRequest.keys
+    override def playPoints: Seq[Int] = _underlying_PlayCardsRequest.playPoints
+    override def handPoints: Seq[Int] = _underlying_PlayCardsRequest.handPoints
     override def _passthroughFields = _underlying_PlayCardsRequest._passthroughFields
   }
 }
 
 trait PlayCardsRequest
   extends ThriftStruct
-  with scala.Product2[Long, String]
+  with scala.Product8[Long, Long, Long, Int, String, Seq[Int], Seq[Int], Seq[Int]]
   with java.io.Serializable
 {
   import PlayCardsRequest._
 
   def memberId: Long
-  def cards: String
+  def gameId: Long
+  def seatId: Long
+  def seqInGame: Int
+  def cardsType: String
+  def keys: Seq[Int]
+  def playPoints: Seq[Int]
+  def handPoints: Seq[Int]
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
   def _1 = memberId
-  def _2 = cards
+  def _2 = gameId
+  def _3 = seatId
+  def _4 = seqInGame
+  def _5 = cardsType
+  def _6 = keys
+  def _7 = playPoints
+  def _8 = handPoints
 
 
   /**
@@ -375,9 +897,51 @@ trait PlayCardsRequest
                 _root_.scala.None
               }
             case 2 =>
-              if (cards ne null) {
-                writeCardsValue(cards, _oprot)
-                _root_.scala.Some(PlayCardsRequest.CardsField)
+              if (true) {
+                writeGameIdValue(gameId, _oprot)
+                _root_.scala.Some(PlayCardsRequest.GameIdField)
+              } else {
+                _root_.scala.None
+              }
+            case 3 =>
+              if (true) {
+                writeSeatIdValue(seatId, _oprot)
+                _root_.scala.Some(PlayCardsRequest.SeatIdField)
+              } else {
+                _root_.scala.None
+              }
+            case 4 =>
+              if (true) {
+                writeSeqInGameValue(seqInGame, _oprot)
+                _root_.scala.Some(PlayCardsRequest.SeqInGameField)
+              } else {
+                _root_.scala.None
+              }
+            case 5 =>
+              if (cardsType ne null) {
+                writeCardsTypeValue(cardsType, _oprot)
+                _root_.scala.Some(PlayCardsRequest.CardsTypeField)
+              } else {
+                _root_.scala.None
+              }
+            case 6 =>
+              if (keys ne null) {
+                writeKeysValue(keys, _oprot)
+                _root_.scala.Some(PlayCardsRequest.KeysField)
+              } else {
+                _root_.scala.None
+              }
+            case 7 =>
+              if (playPoints ne null) {
+                writePlayPointsValue(playPoints, _oprot)
+                _root_.scala.Some(PlayCardsRequest.PlayPointsField)
+              } else {
+                _root_.scala.None
+              }
+            case 8 =>
+              if (handPoints ne null) {
+                writeHandPointsValue(handPoints, _oprot)
+                _root_.scala.Some(PlayCardsRequest.HandPointsField)
               } else {
                 _root_.scala.None
               }
@@ -408,18 +972,42 @@ trait PlayCardsRequest
    */
   def setField(_blob: TFieldBlob): PlayCardsRequest = {
     var memberId: Long = this.memberId
-    var cards: String = this.cards
+    var gameId: Long = this.gameId
+    var seatId: Long = this.seatId
+    var seqInGame: Int = this.seqInGame
+    var cardsType: String = this.cardsType
+    var keys: Seq[Int] = this.keys
+    var playPoints: Seq[Int] = this.playPoints
+    var handPoints: Seq[Int] = this.handPoints
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
         memberId = readMemberIdValue(_blob.read)
       case 2 =>
-        cards = readCardsValue(_blob.read)
+        gameId = readGameIdValue(_blob.read)
+      case 3 =>
+        seatId = readSeatIdValue(_blob.read)
+      case 4 =>
+        seqInGame = readSeqInGameValue(_blob.read)
+      case 5 =>
+        cardsType = readCardsTypeValue(_blob.read)
+      case 6 =>
+        keys = readKeysValue(_blob.read)
+      case 7 =>
+        playPoints = readPlayPointsValue(_blob.read)
+      case 8 =>
+        handPoints = readHandPointsValue(_blob.read)
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
       memberId,
-      cards,
+      gameId,
+      seatId,
+      seqInGame,
+      cardsType,
+      keys,
+      playPoints,
+      handPoints,
       _passthroughFields
     )
   }
@@ -431,18 +1019,42 @@ trait PlayCardsRequest
    */
   def unsetField(_fieldId: Short): PlayCardsRequest = {
     var memberId: Long = this.memberId
-    var cards: String = this.cards
+    var gameId: Long = this.gameId
+    var seatId: Long = this.seatId
+    var seqInGame: Int = this.seqInGame
+    var cardsType: String = this.cardsType
+    var keys: Seq[Int] = this.keys
+    var playPoints: Seq[Int] = this.playPoints
+    var handPoints: Seq[Int] = this.handPoints
 
     _fieldId match {
       case 1 =>
         memberId = 0L
       case 2 =>
-        cards = ""
+        gameId = 0L
+      case 3 =>
+        seatId = 0L
+      case 4 =>
+        seqInGame = 0
+      case 5 =>
+        cardsType = ""
+      case 6 =>
+        keys = Seq[Int]()
+      case 7 =>
+        playPoints = Seq[Int]()
+      case 8 =>
+        handPoints = Seq[Int]()
       case _ =>
     }
     new Immutable(
       memberId,
-      cards,
+      gameId,
+      seatId,
+      seqInGame,
+      cardsType,
+      keys,
+      playPoints,
+      handPoints,
       _passthroughFields - _fieldId
     )
   }
@@ -454,14 +1066,32 @@ trait PlayCardsRequest
    */
   def unsetMemberId: PlayCardsRequest = unsetField(1)
 
-  def unsetCards: PlayCardsRequest = unsetField(2)
+  def unsetGameId: PlayCardsRequest = unsetField(2)
+
+  def unsetSeatId: PlayCardsRequest = unsetField(3)
+
+  def unsetSeqInGame: PlayCardsRequest = unsetField(4)
+
+  def unsetCardsType: PlayCardsRequest = unsetField(5)
+
+  def unsetKeys: PlayCardsRequest = unsetField(6)
+
+  def unsetPlayPoints: PlayCardsRequest = unsetField(7)
+
+  def unsetHandPoints: PlayCardsRequest = unsetField(8)
 
 
   override def write(_oprot: TProtocol): Unit = {
     PlayCardsRequest.validate(this)
     _oprot.writeStructBegin(Struct)
     writeMemberIdField(memberId, _oprot)
-    if (cards ne null) writeCardsField(cards, _oprot)
+    writeGameIdField(gameId, _oprot)
+    writeSeatIdField(seatId, _oprot)
+    writeSeqInGameField(seqInGame, _oprot)
+    if (cardsType ne null) writeCardsTypeField(cardsType, _oprot)
+    if (keys ne null) writeKeysField(keys, _oprot)
+    if (playPoints ne null) writePlayPointsField(playPoints, _oprot)
+    if (handPoints ne null) writeHandPointsField(handPoints, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -471,12 +1101,24 @@ trait PlayCardsRequest
 
   def copy(
     memberId: Long = this.memberId,
-    cards: String = this.cards,
+    gameId: Long = this.gameId,
+    seatId: Long = this.seatId,
+    seqInGame: Int = this.seqInGame,
+    cardsType: String = this.cardsType,
+    keys: Seq[Int] = this.keys,
+    playPoints: Seq[Int] = this.playPoints,
+    handPoints: Seq[Int] = this.handPoints,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
   ): PlayCardsRequest =
     new Immutable(
       memberId,
-      cards,
+      gameId,
+      seatId,
+      seqInGame,
+      cardsType,
+      keys,
+      playPoints,
+      handPoints,
       _passthroughFields
     )
 
@@ -492,11 +1134,17 @@ trait PlayCardsRequest
   override def toString: String = _root_.scala.runtime.ScalaRunTime._toString(this)
 
 
-  override def productArity: Int = 2
+  override def productArity: Int = 8
 
   override def productElement(n: Int): Any = n match {
     case 0 => this.memberId
-    case 1 => this.cards
+    case 1 => this.gameId
+    case 2 => this.seatId
+    case 3 => this.seqInGame
+    case 4 => this.cardsType
+    case 5 => this.keys
+    case 6 => this.playPoints
+    case 7 => this.handPoints
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 

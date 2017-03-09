@@ -353,6 +353,57 @@ class GameEndpoint$FinagleClient(
       }
     }
   }
+  private[this] object __stats_takeLandlord {
+    val RequestsCounter = scopedStats.scope("takeLandlord").counter("requests")
+    val SuccessCounter = scopedStats.scope("takeLandlord").counter("success")
+    val FailuresCounter = scopedStats.scope("takeLandlord").counter("failures")
+    val FailuresScope = scopedStats.scope("takeLandlord").scope("failures")
+  }
+  
+  def takeLandlord(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
+    __stats_takeLandlord.RequestsCounter.incr()
+    val inputArgs = TakeLandlord.Args(traceId, request)
+    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
+      response => {
+        val result = decodeResponse(response, TakeLandlord.Result)
+        val exception: Throwable =
+        null
+  
+        if (result.success.isDefined)
+          _root_.com.twitter.util.Return(result.success.get)
+        else if (exception != null)
+          _root_.com.twitter.util.Throw(exception)
+        else
+          _root_.com.twitter.util.Throw(missingResult("takeLandlord"))
+      }
+  
+    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse](inputArgs, replyDeserializer)
+    _root_.com.twitter.finagle.context.Contexts.local.let(
+      _root_.com.twitter.finagle.thrift.DeserializeCtx.Key,
+      serdeCtx
+    ) {
+      val serialized = encodeRequest("takeLandlord", inputArgs)
+      this.service(serialized).flatMap { response =>
+        Future.const(serdeCtx.deserialize(response))
+      }.respond { response =>
+        val responseClass = responseClassifier.applyOrElse(
+          ctfs.ReqRep(inputArgs, response),
+          ctfs.ResponseClassifier.Default)
+        responseClass match {
+          case ctfs.ResponseClass.Successful(_) =>
+            __stats_takeLandlord.SuccessCounter.incr()
+          case ctfs.ResponseClass.Failed(_) =>
+            __stats_takeLandlord.FailuresCounter.incr()
+            response match {
+              case Throw(ex) =>
+                setServiceName(ex)
+                __stats_takeLandlord.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+              case _ =>
+            }
+        }
+      }
+    }
+  }
   private[this] object __stats_playCards {
     val RequestsCounter = scopedStats.scope("playCards").counter("requests")
     val SuccessCounter = scopedStats.scope("playCards").counter("success")
@@ -360,10 +411,10 @@ class GameEndpoint$FinagleClient(
     val FailuresScope = scopedStats.scope("playCards").scope("failures")
   }
   
-  def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] = {
+  def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = {
     __stats_playCards.RequestsCounter.incr()
     val inputArgs = PlayCards.Args(traceId, request)
-    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] =
+    val replyDeserializer: Array[Byte] => _root_.com.twitter.util.Try[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
       response => {
         val result = decodeResponse(response, PlayCards.Result)
         val exception: Throwable =
@@ -377,7 +428,7 @@ class GameEndpoint$FinagleClient(
           _root_.com.twitter.util.Throw(missingResult("playCards"))
       }
   
-    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse](inputArgs, replyDeserializer)
+    val serdeCtx = new _root_.com.twitter.finagle.thrift.DeserializeCtx[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse](inputArgs, replyDeserializer)
     _root_.com.twitter.finagle.context.Contexts.local.let(
       _root_.com.twitter.finagle.thrift.DeserializeCtx.Key,
       serdeCtx

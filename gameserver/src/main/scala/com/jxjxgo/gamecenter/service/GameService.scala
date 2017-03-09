@@ -1,13 +1,17 @@
 package com.jxjxgo.gamecenter.service
 
 import java.sql.Timestamp
+import java.util
 import javax.inject.Inject
 
-import com.jxjxgo.account.rpc.domain.{AccountEndpoint, DiamondAccountResponse}
-import com.jxjxgo.common.exception.ErrorCode
+import com.jxjxgo.account.rpc.domain.{AccountEndpoint, DiamondAccountResponse, SettleRequest}
+import com.jxjxgo.common.exception.{ErrorCode, ServiceException}
 import com.jxjxgo.common.kafka.template.ProducerTemplate
+import com.jxjxgo.gamecenter.domain.Game
 import com.jxjxgo.gamecenter.domain.mq.joingame.JoinGameMessage
-import com.jxjxgo.gamecenter.enumnate.{GameStatus, SeatStatus}
+import com.jxjxgo.gamecenter.enumnate.CardsType._
+import com.jxjxgo.gamecenter.enumnate.{CardsType, GameStatus, PlayType, SeatStatus}
+import com.jxjxgo.gamecenter.helper.{CardsJudgeHelper, TypeWithPoints}
 import com.jxjxgo.gamecenter.repo.TowVsOneRepository
 import com.jxjxgo.gamecenter.rpc.domain._
 import com.jxjxgo.sso.rpc.domain.SSOServiceEndpoint
@@ -18,6 +22,8 @@ import org.slf4j.{Logger, LoggerFactory}
   * Created by fangzhongwei on 2016/12/16.
   */
 trait GameService {
+  def takeLandlord(traceId: String, memberId: Long, seatId: Long, gameId: Long, take: Boolean): GameBaseResponse
+
   def playerOffline(traceId: String, socketUuid: Long, memberId: Long): GameBaseResponse
 
   def playerOnline(traceId: String, request: OnlineRequest): GameBaseResponse
@@ -28,10 +34,10 @@ trait GameService {
 
   def joinGame(traceId: String, request: JoinGameRequest): GameBaseResponse
 
-  def playCards(traceId: String, request: PlayCardsRequest): PlayCardsResponse
+  def playCards(traceId: String, request: PlayCardsRequest): GameBaseResponse
 }
 
-class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], accountEndpoint: AccountEndpoint[Future], producerTemplate: ProducerTemplate, towVsOneRepository: TowVsOneRepository) extends GameService {
+class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], accountEndpoint: AccountEndpoint[Future], producerTemplate: ProducerTemplate, towVsOneRepository: TowVsOneRepository, coordinateService: CoordinateService) extends GameService {
   private[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   // game center, ddz , key:memberId, value:game status
@@ -41,24 +47,20 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
   private[this] val addressPre = "gc.ddz.mi-addr:"
   private[this] val addressExpireSeconds = 24 * 60 * 60
 
-  implicit def convert(s: towVsOneRepository.TmSeatRow): GameTurnResponse = {
-    GameTurnResponse(s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.choosingLandlord, s.landlord, s.turnToPlay)
-  }
-
   override def checkGameStatus(traceId: String, request: CheckGameStatusRequest): CheckGameStatusResponse = {
     val memberId: Long = request.memberId
     towVsOneRepository.findPlayingSeatByMemberAndStatus(memberId, Set(SeatStatus.Playing.getCode.toShort, SeatStatus.Dropped.getCode.toShort)) match {
       case Some(seat) =>
         val gamesStatus: GameStatus = towVsOneRepository.selectGameStatus(seat.gameId)
-        gamesStatus match {
-          case GameStatus.Playing =>
+        gamesStatus == GameStatus.WaitingLandlord || gamesStatus == GameStatus.Playing match {
+          case true =>
             request.fingerPrint.equals(seat.fingerPrint) match {
               case true =>
-                CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = true, turn = Some(seat))
+                CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = true)
               case false =>
                 CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = false)
             }
-          case _ =>
+          case false =>
             CheckGameStatusResponse(code = "0", memberId = memberId, reconnect = false)
         }
       case None =>
@@ -95,10 +97,254 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
     }
   }
 
-  override def playCards(traceId: String, request: PlayCardsRequest): PlayCardsResponse = {
-    null
+  override def playCards(traceId: String, request: PlayCardsRequest): GameBaseResponse = {
+    val list: util.List[Integer] = new util.ArrayList[Integer]()
+    request.playPoints.foreach(p => list.add(Integer.valueOf(p)))
+
+    val typeWithPoints: TypeWithPoints = CardsJudgeHelper.GetInstance().judgeType(list)
+
+    typeWithPoints.getCardsType match {
+      case Invalid =>
+        logger.error(s"invalid cardType, cards:$list")
+        GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
+      case _ =>
+        val ct: CardsType = CardsType.valueOf(request.cardsType)
+
+        if (ct == Invalid || ct == Exist) {
+          throw ServiceException.make(ErrorCode.EC_GAME_INVALID_REQUEST_DATA);
+        }
+
+        ct == null match {
+          case true =>
+            GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
+          case false =>
+            val keyList: util.List[Integer] = convertList(request.keys)
+
+            val twp: TypeWithPoints = parseTypeWithPoints(keyList, ct)
+
+            twp.equals(typeWithPoints) match {
+              case true =>
+                val seqInGame: Short = request.seqInGame.toShort
+                val gameId: Long = request.gameId
+                towVsOneRepository.loadGame(gameId) match {
+                  case Some(game) =>
+                    var playerCards = ""
+                    val memberId = request.memberId
+                    if (memberId == game.player1Id) {
+                      playerCards = game.player1Cards
+                    } else if (memberId == game.player2Id) {
+                      playerCards = game.player2Cards
+                    } else if (memberId == game.player3Id) {
+                      playerCards = game.player3Cards
+                    }
+                    game.activePlayerId != request.memberId || game.status != GameStatus.Playing.getCode || game.seqInGame != seqInGame || !join(request.handPoints).equals(playerCards) || !listContains(request.handPoints, request.playPoints) match {
+                      case true =>
+                        logger.error(s"validate fail, request:$request.")
+                        GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
+                      case false =>
+
+                        val seatId: Long = request.seatId
+                        val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
+
+                        seat.memberId == memberId && seat.seqInGame == 0 && (game.seat1Id == seatId || game.seat2Id == seatId || game.seat3Id == seatId) match {
+                          case true =>
+                            var playVaild = true
+                            (seqInGame > 1) match {
+                              case true =>
+                                val proRecord: towVsOneRepository.TmPlayRecordRow = towVsOneRepository.loadPlayRecord(gameId, (seqInGame - 1).toShort)
+                                val proCardsType: CardsType = CardsType.valueOf(proRecord.cardsType)
+                                val twp2Beat: TypeWithPoints = parseTypeWithPoints(convertList(proRecord.keysForNext.split(",").map(_.toInt)), CardsType.valueOf(proRecord.cardsTypeForNext))
+                                CardsJudgeHelper.GetInstance().canPlay(twp2Beat, typeWithPoints) match {
+                                  case true =>
+                                    recordPlay(traceId, request, game, twp2Beat, typeWithPoints, proCardsType)
+                                  case false =>
+                                    logger.error(s"PLAY_GAME_CARDS_NOT_BIG_ENOUGH :$request.")
+                                    GameBaseResponse(ErrorCode.PLAY_GAME_CARDS_NOT_BIG_ENOUGH.getCode)
+                                }
+                              case false =>
+                                typeWithPoints.getCardsType == Pass || typeWithPoints.getCardsType == Exist match {
+                                  case true =>
+                                    GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
+                                  case false =>
+                                    recordPlay(traceId, request, game, new TypeWithPoints(Exist), typeWithPoints, Exist)
+                                }
+                            }
+                          case false =>
+                            logger.error("params invalid.")
+                            GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
+                        }
+                    }
+                  case None =>
+                    logger.error(s"game not exists, game id :${gameId}.")
+                    GameBaseResponse(ErrorCode.EC_GAME_GAME_NOT_EXIST.getCode)
+                }
+              case false =>
+                logger.error("params mismatch.")
+                GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
+            }
+        }
+    }
   }
 
+  def recordPlay(traceId: String, r: PlayCardsRequest, game: Game, beatType: TypeWithPoints, twp: TypeWithPoints, proProCardsType: CardsType): GameBaseResponse = {
+    var cardsTypeForNext: CardsType = null
+    var keysForNext: String = null
+
+    r.cardsType.equals("Pass") && proProCardsType == Pass match {
+      case true =>
+        cardsTypeForNext = Exist
+        keysForNext = "-"
+      case false =>
+        beatType.getCardsType match {
+          case Exist =>
+            cardsTypeForNext = twp.getCardsType
+            keysForNext = twp.generateKeys();
+          case _ =>
+            twp.getCardsType match {
+              case Pass =>
+                cardsTypeForNext = beatType.getCardsType
+                keysForNext = beatType.generateKeys()
+              case _ =>
+                cardsTypeForNext = twp.getCardsType
+                keysForNext = twp.generateKeys()
+            }
+        }
+    }
+
+    val playRecordRow: towVsOneRepository.TmPlayRecordRow = towVsOneRepository.TmPlayRecordRow(0, PlayType.Play.getCode, r.gameId, r.memberId, r.seqInGame.toShort, r.cardsType, join(r.keys), join(r.handPoints), join(r.playPoints), cardsTypeForNext.toString, keysForNext, new Timestamp(System.currentTimeMillis()))
+
+    val seatId = r.seatId
+    var proSeatId = 0L
+    var nextSeatId = 0L
+    var updateIndex = 1
+    var nextActivePlayerId = 0L
+    if (seatId == game.seat1Id) {
+      updateIndex = 1
+      proSeatId = game.seat3Id
+      nextSeatId = game.seat2Id
+      nextActivePlayerId = game.player2Id
+    } else if (seatId == game.seat2Id) {
+      updateIndex = 2
+      proSeatId = game.seat1Id
+      nextSeatId = game.seat3Id
+      nextActivePlayerId = game.player3Id
+    } else {
+      updateIndex = 3
+      proSeatId = game.seat2Id
+      nextSeatId = game.seat1Id
+      nextActivePlayerId = game.player1Id
+    }
+
+    val leftCount: Int = r.handPoints.size - r.playPoints.size
+    val leftCards: String = joinLeft(r.handPoints, r.playPoints)
+
+    var multiples: Int = game.multiples
+
+    twp.getCardsType == Four || twp.getCardsType == DoubJoker match {
+      case true => multiples *= 2
+      case false =>
+    }
+
+    val cardsInfo4Next = new StringBuilder(cardsTypeForNext.toString).append(':').append(keysForNext).append(':').append({
+      r.cardsType match {
+        case "Pass" => "-"
+        case _ => join(r.playPoints)
+      }
+    }).append(':').append({
+      r.cardsType match {
+        case "Pass" => "Pass"
+        case _ => "Play"
+      }
+    }).toString()
+
+    towVsOneRepository.playCards(game, playRecordRow, updateIndex, seatId, proSeatId, nextSeatId, leftCount, leftCards, multiples, nextActivePlayerId, r.memberId, cardsInfo4Next)
+
+    coordinateService.notifySeat(game.seat1Id)
+    coordinateService.notifySeat(game.seat2Id)
+    coordinateService.notifySeat(game.seat3Id)
+
+    leftCount match {
+      case 0 =>
+        val gameId: Long = game.id
+        val deviceType: Int = game.deviceType
+        val memberId1: Long = game.player1Id
+        var amount1: Int = 0
+        val memberId2: Long = game.player2Id
+        var amount2: Int = 0
+        val memberId3: Long = game.player3Id
+        var amount3: Int = 0
+
+        val baseAmount: Int = game.baseAmount
+
+        if (seatId == game.seat1Id) {
+          amount1 = baseAmount * multiples * 2
+          amount2 = -baseAmount * multiples
+          amount3 = -baseAmount * multiples
+        } else if (seatId == game.seat2Id) {
+          amount1 = -baseAmount * multiples
+          amount2 = baseAmount * multiples * 2
+          amount3 = -baseAmount * multiples
+        } else {
+          amount1 = -baseAmount * multiples
+          amount2 = -baseAmount * multiples
+          amount3 = baseAmount * multiples * 2
+        }
+        accountEndpoint.settle(traceId, SettleRequest(gameId, deviceType, memberId1, amount1, memberId2, amount2, memberId3, amount3))
+        towVsOneRepository.setGameStatus(gameId, GameStatus.Finished)
+      case _ =>
+    }
+    GameBaseResponse("0")
+  }
+
+  def joinLeft(container: Seq[Int], list: Seq[Int]): String = {
+    if (container.size == list.size) return ""
+    val j: StringBuilder = new StringBuilder
+    for (i <- container) {
+      if (!list.contains(i)) j.append(i).append(',')
+    }
+    j.substring(0, j.length - 1)
+  }
+
+  def join(list: Seq[Int]): String = {
+    if (list == null || list.size == 0) return ""
+    val j: StringBuilder = new StringBuilder
+    for (i <- list) {
+      j.append(i).append(',')
+    }
+    j.substring(0, j.length - 1)
+  }
+
+  private def listContains(container: Seq[Int], keys: Seq[Int]): Boolean = {
+    var contains = true
+    keys.foreach {
+      k =>
+        if (!container.contains(k)) {
+          contains = false
+        }
+    }
+    contains
+  }
+
+  private def convertList(seq: Seq[Int]): util.List[Integer] = {
+    val keyList: util.List[Integer] = new util.ArrayList[Integer]()
+    seq.foreach(p => keyList.add(Integer.valueOf(p)))
+    keyList
+  }
+
+  def parseTypeWithPoints(keys: util.List[Integer], ct: CardsType): TypeWithPoints = {
+    val twp: TypeWithPoints = new TypeWithPoints()
+    twp.setCardsType(ct)
+    if (ct != Pass) {
+      ct match {
+        case Single => twp.setP(keys.get(0))
+        case Doub => twp.setP(keys.get(0))
+        case Four => twp.setP(keys.get(0))
+        case _ =>
+          twp.setPs(keys)
+      }
+    }
+    twp
+  }
 
   override def playerOffline(traceId: String, socketUuid: Long, memberId: Long): GameBaseResponse = {
     towVsOneRepository.offline(socketUuid)
@@ -117,5 +363,55 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
 
   override def generateSocketId(traceId: String): GenerateSocketIdResponse = {
     GenerateSocketIdResponse(code = "0", socketId = towVsOneRepository.generateSocketId())
+  }
+
+  override def takeLandlord(traceId: String, memberId: Long, seatId: Long, gameId: Long, take: Boolean): GameBaseResponse = {
+    towVsOneRepository.loadGame(gameId) match {
+      case Some(game) =>
+        var proMemberId = 0L
+        var nextMemberId = 0L
+        if (memberId == game.player1Id) {
+          proMemberId = game.player3Id
+          nextMemberId = game.player2Id
+        } else if (memberId == game.player2Id) {
+          proMemberId = game.player1Id
+          nextMemberId = game.player3Id
+        } else {
+          proMemberId = game.player2Id
+          nextMemberId = game.player1Id
+        }
+        game.activePlayerId == memberId && game.status == GameStatus.WaitingLandlord.getCode && game.seqInGame == 0 match {
+          case true =>
+            val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
+            seat.memberId == memberId && seat.seqInGame == 0 && (game.seat1Id == seatId || game.seat2Id == seatId || game.seat3Id == seatId) match {
+              case true =>
+                take match {
+                  case true =>
+                    towVsOneRepository.takeLandlord(gameId, memberId, proMemberId, nextMemberId)
+                    coordinateService.notifySeat(game.seat1Id)
+                    coordinateService.notifySeat(game.seat2Id)
+                    coordinateService.notifySeat(game.seat3Id)
+                    GameBaseResponse("0")
+                  case false =>
+                    val passCount: Int = towVsOneRepository.gamePassCount(gameId)
+                    passCount >= 2 match {
+                      case true =>
+                        towVsOneRepository.passLandlord3th(gameId, memberId, proMemberId, nextMemberId)
+                        coordinateService.createGame(traceId, game.seat1Id, game.seat2Id, game.seat3Id, game.player1Id, game.player2Id, game.player3Id, game.gameType, game.deviceType, game.baseAmount)
+                      case false =>
+                        towVsOneRepository.passLandlord(gameId, memberId, proMemberId, nextMemberId)
+                    }
+                    GameBaseResponse("0")
+                }
+              case false =>
+                throw ServiceException.make(ErrorCode.EC_GAME_INVALID_REQUEST_DATA)
+            }
+          case false =>
+            throw ServiceException.make(ErrorCode.EC_GAME_INVALID_REQUEST_DATA)
+        }
+      case None =>
+        logger.error(s"game not found, game id:$gameId")
+        throw ServiceException.make(ErrorCode.EC_GAME_GAME_NOT_EXIST)
+    }
   }
 }

@@ -3,8 +3,8 @@ package com.jxjxgo.gamecenter.repo
 import java.sql.{Connection, PreparedStatement, Timestamp}
 
 import com.jxjxgo.gamecenter.domain.mq.joingame.JoinGameMessage
-import com.jxjxgo.gamecenter.domain.{PlayTable, Room, Seat}
-import com.jxjxgo.gamecenter.enumnate.{GameStatus, RoomStatus, SeatStatus, TableStatus}
+import com.jxjxgo.gamecenter.domain.{Game, PlayTable, Room, Seat}
+import com.jxjxgo.gamecenter.enumnate._
 import com.jxjxgo.mysql.connection.DBComponent
 import org.slf4j.{Logger, LoggerFactory}
 import slick.jdbc.JdbcBackend
@@ -20,20 +20,31 @@ trait TowVsOneRepository extends Tables {
 
   import profile.api._
 
+  implicit def convertGame(r: TmGameRow): Game = {
+    Game(r.id, r.gameType, r.deviceType, r.baseAmount, r.multiples, r.status, r.player1Id, r.player2Id, r.player3Id, r.seat1Id, r.seat2Id, r.seat3Id, r.seqInGame, r.activePlayerId, r.player1Cards, r.player2Cards, r.player3Cards, r.outsideCards, r.landlordId, r.winnerId, r.gmtCreate, r.gmtUpdate)
+  }
+
   def createGame(game: TmGameRow, seatId1: Long, seatId2: Long, seatId3: Long, player1CardsList: List[Int], player2CardsList: List[Int], player3CardsList: List[Int], dzCardsList: List[Int], nickName1: String, nickName2: String, nickName3: String): Unit = {
     val cards1: String = player1CardsList.mkString(",")
     val cards2: String = player2CardsList.mkString(",")
     val cards3: String = player3CardsList.mkString(",")
-    val dzCards: String = dzCardsList.mkString(",")
+    val landlordCards: String = dzCardsList.mkString(",")
     val now = new Timestamp(System.currentTimeMillis())
 
-    val a = (for {
+    //    string cardsTypeCode2Beat;
+    //    string cardsKeys2Beat;
+    //    string cards4Show;
+    //    string proPlayerAction;
+
+    val proCards: String = new StringBuilder("Exist:-:").append(landlordCards).append(":None").toString();
+
+    val tran = (for {
       ns <- TmGame += game
-      _ <- TmSeat.filter(_.id === seatId1).map(s => (s.status, s.gameId, s.multiples, s.cards, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.turnToPlay, s.choosingLandlord, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards1, player3CardsList.size.toShort, nickName3, player2CardsList.size.toShort, nickName2, true, true, false, now)
-      _ <- TmSeat.filter(_.id === seatId2).map(s => (s.status, s.gameId, s.multiples, s.cards, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.turnToPlay, s.choosingLandlord, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards2, player1CardsList.size.toShort, nickName1, player3CardsList.size.toShort, nickName3, false, false, false, now)
-      _ <- TmSeat.filter(_.id === seatId3).map(s => (s.status, s.gameId, s.multiples, s.cards, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.turnToPlay, s.choosingLandlord, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards3, player2CardsList.size.toShort, nickName2, player1CardsList.size.toShort, nickName1, false, false, false, now)
+      _ <- TmSeat.filter(_.id === seatId1).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards1, landlordCards, proCards, player3CardsList.size.toShort, nickName3, player2CardsList.size.toShort, nickName2, PlayStatus.DecideToBeLandlord.toString, false, now)
+      _ <- TmSeat.filter(_.id === seatId2).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards2, landlordCards, proCards, player1CardsList.size.toShort, nickName1, player3CardsList.size.toShort, nickName3, PlayStatus.WaitingOtherPlay.toString, false, now)
+      _ <- TmSeat.filter(_.id === seatId3).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards3, landlordCards, proCards, player2CardsList.size.toShort, nickName2, player1CardsList.size.toShort, nickName1, PlayStatus.WaitingOtherPlay.toString, false, now)
     } yield ()).transactionally
-    Await.result(db.run(a), Duration.Inf)
+    Await.result(db.run(tran), Duration.Inf)
   }
 
   def getRoomConfig(gameType: Int, deviceType: Int): Option[TmRoomConfigRow] = {
@@ -213,7 +224,7 @@ trait TowVsOneRepository extends Tables {
     }, Duration.Inf)
   }
 
-  def getSeat(seatId: Long):TmSeatRow = {
+  def getSeat(seatId: Long): TmSeatRow = {
     Await.result(db.run {
       TmSeat.filter(_.id === seatId).result.head
     }, Duration.Inf)
@@ -249,6 +260,100 @@ trait TowVsOneRepository extends Tables {
 
   def generateSocketId(): Long = {
     Await.result(db.run(sql"""select nextval('seq_socket_id')""".as[(Long)]), Duration.Inf).head
+  }
+
+  def loadGame(gameId: Long): Option[Game] = {
+    Await.result(db.run(TmGame.filter(_.id === gameId).result.headOption), Duration.Inf) match {
+      case Some(r) => Some(r)
+      case None => None
+    }
+  }
+
+  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long): Unit = {
+    val now: Timestamp = new Timestamp(System.currentTimeMillis())
+    val a = (for {
+      ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.Playing.getCode, memberId, memberId, 1, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == memberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.TurnToPlay.getCode, 1, true, 'S', now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == proMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'N', now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == nextMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'P', now)
+      _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideYes.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
+    } yield ()).transactionally
+    Await.result(db.run(a), Duration.Inf)
+  }
+
+  def passLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long): Unit = {
+    val now: Timestamp = new Timestamp(System.currentTimeMillis())
+    val a = (for {
+      ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.Playing.getCode, 0, nextMemberId, 1, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == memberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == proMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == nextMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.DecideToBeLandlord.getCode, 0, false, now)
+      _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideNo.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
+    } yield ()).transactionally
+    Await.result(db.run(a), Duration.Inf)
+  }
+
+  def passLandlord3th(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long): Unit = {
+    val now: Timestamp = new Timestamp(System.currentTimeMillis())
+    val a = (for {
+      ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.activePlayerId, g.winnerId, g.gmtUpdate)).update(GameStatus.Aborted.getCode, 0, 0, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == memberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == proMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == nextMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
+      _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideNo.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
+    } yield ()).transactionally
+    Await.result(db.run(a), Duration.Inf)
+  }
+
+  //  def getSeatIdByGameAndMember(gameId: Long, memberId: Long): Long = {
+  //    Await.result(db.run(sql"""SELECT id FROM tm_seat WHERE game_id = $gameId AND member_id = $memberId """.as[(Long)]), Duration.Inf).head
+  //  }
+
+  def gamePassCount(gameId: Long): Int = {
+    val code: Short = PlayType.DecideNo.getCode
+    Await.result(db.run(sql"""SELECT COUNT(*) FROM tm_play_record WHERE game_id = $gameId AND play_type = $code """.as[(Int)]), Duration.Inf).head
+  }
+
+  def loadPlayRecord(gameId: Long, seqInGame: Short): TmPlayRecordRow = {
+    Await.result(db.run(TmPlayRecord.filter {
+      r => (r.gameId === gameId && r.seqInGame == seqInGame)
+    }.result.head), Duration.Inf)
+  }
+
+  def playCards(game: Game, playRecordRow: TmPlayRecordRow, updateIndex: Int, seatId: Long, proSeatId: Long, nextSeatId: Long, leftCount: Int, leftCards: String, multiples: Int, nextActivePlayerId: Long, playerId: Long, cardsInfo4Next: String) = {
+
+    //    proCardsInfo:
+    //    string cardsTypeCode2Beat;
+    //    string cardsKeys2Beat;
+    //    string cards4Show;
+    //    string proPlayerAction;
+
+    val now = new Timestamp(System.currentTimeMillis())
+
+    val activeSeqInGame: Int = game.seqInGame + 1
+    val tran = (for {
+      ns <- TmGame.filter(_.id === game.id).map(g => ( {
+        updateIndex match {
+          case 1 => g.player1Cards
+          case 2 => g.player2Cards
+          case _ => g.player3Cards
+        }
+      }, g.activePlayerId, g.seqInGame, g.multiples, g.winnerId, g.gmtUpdate))
+        .update(leftCards, nextActivePlayerId, activeSeqInGame, multiples, {
+          leftCount match {
+            case 0 => playerId
+            case _ => 0L
+          }
+        }, now)
+      _ <- TmSeat.filter(_.id === seatId).map(s => (s.cards, s.multiples, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCards, multiples, PlayStatus.WaitingOtherPlay.getCode, 0, now)
+      _ <- TmSeat.filter(_.id === proSeatId).map(s => (s.nextCardsCount, s.multiples, s.gmtUpdate)).update(leftCount.toShort, multiples, now)
+      _ <- TmSeat.filter(_.id === nextSeatId).map(s => (s.previousCardsCount, s.multiples, s.proCardsInfo, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, now)
+    } yield ()).transactionally
+    Await.result(db.run(tran), Duration.Inf)
+  }
+
+  def setGameStatus(gameId: Long, Finished: GameStatus) = db.run {
+    TmGame.filter(_.id === gameId).map(g => (g.status, g.gmtUpdate)).update(GameStatus.Finished.getCode, new Timestamp(System.currentTimeMillis()))
   }
 }
 

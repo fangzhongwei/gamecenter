@@ -42,7 +42,9 @@ trait GameEndpoint[+MM[_]] extends ThriftService {
   
   def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): MM[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
   
-  def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): MM[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]
+  def takeLandlord(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest): MM[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
+  
+  def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): MM[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
 }
 
 
@@ -55,6 +57,7 @@ object GameEndpoint { self =>
       generateSocketId : com.twitter.finagle.Service[self.GenerateSocketId.Args, self.GenerateSocketId.Result],
       checkGameStatus : com.twitter.finagle.Service[self.CheckGameStatus.Args, self.CheckGameStatus.Result],
       joinGame : com.twitter.finagle.Service[self.JoinGame.Args, self.JoinGame.Result],
+      takeLandlord : com.twitter.finagle.Service[self.TakeLandlord.Args, self.TakeLandlord.Result],
       playCards : com.twitter.finagle.Service[self.PlayCards.Args, self.PlayCards.Result]
   ) extends BaseServiceIface
 
@@ -65,6 +68,7 @@ object GameEndpoint { self =>
     def generateSocketId : com.twitter.finagle.Service[self.GenerateSocketId.Args, self.GenerateSocketId.Result]
     def checkGameStatus : com.twitter.finagle.Service[self.CheckGameStatus.Args, self.CheckGameStatus.Result]
     def joinGame : com.twitter.finagle.Service[self.JoinGame.Args, self.JoinGame.Result]
+    def takeLandlord : com.twitter.finagle.Service[self.TakeLandlord.Args, self.TakeLandlord.Result]
     def playCards : com.twitter.finagle.Service[self.PlayCards.Args, self.PlayCards.Result]
 
     override def toThriftService: ThriftService = new MethodIface(this)
@@ -83,6 +87,7 @@ object GameEndpoint { self =>
           generateSocketId = ThriftServiceIface(self.GenerateSocketId, binaryService, pf, stats),
           checkGameStatus = ThriftServiceIface(self.CheckGameStatus, binaryService, pf, stats),
           joinGame = ThriftServiceIface(self.JoinGame, binaryService, pf, stats),
+          takeLandlord = ThriftServiceIface(self.TakeLandlord, binaryService, pf, stats),
           playCards = ThriftServiceIface(self.PlayCards, binaryService, pf, stats)
       )
   }
@@ -109,9 +114,13 @@ object GameEndpoint { self =>
       ThriftServiceIface.resultFilter(self.JoinGame) andThen serviceIface.joinGame
     def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
       __joinGame_service(self.JoinGame.Args(traceId, request))
+    private[this] val __takeLandlord_service =
+      ThriftServiceIface.resultFilter(self.TakeLandlord) andThen serviceIface.takeLandlord
+    def takeLandlord(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
+      __takeLandlord_service(self.TakeLandlord.Args(traceId, request))
     private[this] val __playCards_service =
       ThriftServiceIface.resultFilter(self.PlayCards) andThen serviceIface.playCards
-    def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] =
+    def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] =
       __playCards_service(self.PlayCards.Args(traceId, request))
   }
 
@@ -2346,6 +2355,451 @@ object GameEndpoint { self =>
   val joinGame$result = JoinGame.Result
   type joinGame$result = JoinGame.Result
 
+  object TakeLandlord extends com.twitter.scrooge.ThriftMethod {
+    
+    object Args extends ThriftStructCodec3[Args] {
+      private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
+      val Struct = new TStruct("takeLandlord_args")
+      val TraceIdField = new TField("traceId", TType.STRING, 1)
+      val TraceIdFieldManifest = implicitly[Manifest[String]]
+      val RequestField = new TField("request", TType.STRUCT, 2)
+      val RequestFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest]]
+    
+      /**
+       * Field information in declaration order.
+       */
+      lazy val fieldInfos: scala.List[ThriftStructFieldInfo] = scala.List[ThriftStructFieldInfo](
+        new ThriftStructFieldInfo(
+          TraceIdField,
+          false,
+          false,
+          TraceIdFieldManifest,
+          _root_.scala.None,
+          _root_.scala.None,
+          immutable$Map.empty[String, String],
+          immutable$Map.empty[String, String]
+        ),
+        new ThriftStructFieldInfo(
+          RequestField,
+          false,
+          false,
+          RequestFieldManifest,
+          _root_.scala.None,
+          _root_.scala.None,
+          immutable$Map.empty[String, String],
+          immutable$Map.empty[String, String]
+        )
+      )
+    
+      lazy val structAnnotations: immutable$Map[String, String] =
+        immutable$Map.empty[String, String]
+    
+      /**
+       * Checks that all required fields are non-null.
+       */
+      def validate(_item: Args): Unit = {
+      }
+    
+      def withoutPassthroughFields(original: Args): Args =
+        new Args(
+          traceId =
+            {
+              val field = original.traceId
+              field
+            },
+          request =
+            {
+              val field = original.request
+              com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest.withoutPassthroughFields(field)
+            }
+        )
+    
+      override def encode(_item: Args, _oproto: TProtocol): Unit = {
+        _item.write(_oproto)
+      }
+    
+      override def decode(_iprot: TProtocol): Args = {
+        var traceId: String = null
+        var request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest = null
+        var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
+        var _done = false
+    
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 1 =>
+                _field.`type` match {
+                  case TType.STRING =>
+                    traceId = readTraceIdValue(_iprot)
+                  case _actualType =>
+                    val _expectedType = TType.STRING
+                    throw new TProtocolException(
+                      "Received wrong type for field 'traceId' (expected=%s, actual=%s).".format(
+                        ttypeToString(_expectedType),
+                        ttypeToString(_actualType)
+                      )
+                    )
+                }
+              case 2 =>
+                _field.`type` match {
+                  case TType.STRUCT =>
+                    request = readRequestValue(_iprot)
+                  case _actualType =>
+                    val _expectedType = TType.STRUCT
+                    throw new TProtocolException(
+                      "Received wrong type for field 'request' (expected=%s, actual=%s).".format(
+                        ttypeToString(_expectedType),
+                        ttypeToString(_actualType)
+                      )
+                    )
+                }
+              case _ =>
+                if (_passthroughFields == null)
+                  _passthroughFields = immutable$Map.newBuilder[Short, TFieldBlob]
+                _passthroughFields += (_field.id -> TFieldBlob.read(_field, _iprot))
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+    
+        new Args(
+          traceId,
+          request,
+          if (_passthroughFields == null)
+            NoPassthroughFields
+          else
+            _passthroughFields.result()
+        )
+      }
+    
+      def apply(
+        traceId: String,
+        request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest
+      ): Args =
+        new Args(
+          traceId,
+          request
+        )
+    
+      def unapply(_item: Args): _root_.scala.Option[scala.Product2[String, com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest]] = _root_.scala.Some(_item)
+    
+    
+      @inline private def readTraceIdValue(_iprot: TProtocol): String = {
+        _iprot.readString()
+      }
+    
+      @inline private def writeTraceIdField(traceId_item: String, _oprot: TProtocol): Unit = {
+        _oprot.writeFieldBegin(TraceIdField)
+        writeTraceIdValue(traceId_item, _oprot)
+        _oprot.writeFieldEnd()
+      }
+    
+      @inline private def writeTraceIdValue(traceId_item: String, _oprot: TProtocol): Unit = {
+        _oprot.writeString(traceId_item)
+      }
+    
+      @inline private def readRequestValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest = {
+        com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest.decode(_iprot)
+      }
+    
+      @inline private def writeRequestField(request_item: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest, _oprot: TProtocol): Unit = {
+        _oprot.writeFieldBegin(RequestField)
+        writeRequestValue(request_item, _oprot)
+        _oprot.writeFieldEnd()
+      }
+    
+      @inline private def writeRequestValue(request_item: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest, _oprot: TProtocol): Unit = {
+        request_item.write(_oprot)
+      }
+    
+    
+    }
+    
+    class Args(
+        val traceId: String,
+        val request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest,
+        val _passthroughFields: immutable$Map[Short, TFieldBlob])
+      extends ThriftStruct
+      with scala.Product2[String, com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest]
+      with java.io.Serializable
+    {
+      import Args._
+      def this(
+        traceId: String,
+        request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest
+      ) = this(
+        traceId,
+        request,
+        Map.empty
+      )
+    
+      def _1 = traceId
+      def _2 = request
+    
+    
+    
+      override def write(_oprot: TProtocol): Unit = {
+        Args.validate(this)
+        _oprot.writeStructBegin(Struct)
+        if (traceId ne null) writeTraceIdField(traceId, _oprot)
+        if (request ne null) writeRequestField(request, _oprot)
+        if (_passthroughFields.nonEmpty) {
+          _passthroughFields.values.foreach { _.write(_oprot) }
+        }
+        _oprot.writeFieldStop()
+        _oprot.writeStructEnd()
+      }
+    
+      def copy(
+        traceId: String = this.traceId,
+        request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest = this.request,
+        _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
+      ): Args =
+        new Args(
+          traceId,
+          request,
+          _passthroughFields
+        )
+    
+      override def canEqual(other: Any): Boolean = other.isInstanceOf[Args]
+    
+      override def equals(other: Any): Boolean =
+        canEqual(other) &&
+          _root_.scala.runtime.ScalaRunTime._equals(this, other) &&
+          _passthroughFields == other.asInstanceOf[Args]._passthroughFields
+    
+      override def hashCode: Int = _root_.scala.runtime.ScalaRunTime._hashCode(this)
+    
+      override def toString: String = _root_.scala.runtime.ScalaRunTime._toString(this)
+    
+    
+      override def productArity: Int = 2
+    
+      override def productElement(n: Int): Any = n match {
+        case 0 => this.traceId
+        case 1 => this.request
+        case _ => throw new IndexOutOfBoundsException(n.toString)
+      }
+    
+      override def productPrefix: String = "Args"
+    }
+
+    type SuccessType = com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse
+    
+    object Result extends ThriftStructCodec3[Result] {
+      private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
+      val Struct = new TStruct("takeLandlord_result")
+      val SuccessField = new TField("success", TType.STRUCT, 0)
+      val SuccessFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
+    
+      /**
+       * Field information in declaration order.
+       */
+      lazy val fieldInfos: scala.List[ThriftStructFieldInfo] = scala.List[ThriftStructFieldInfo](
+        new ThriftStructFieldInfo(
+          SuccessField,
+          true,
+          false,
+          SuccessFieldManifest,
+          _root_.scala.None,
+          _root_.scala.None,
+          immutable$Map.empty[String, String],
+          immutable$Map.empty[String, String]
+        )
+      )
+    
+      lazy val structAnnotations: immutable$Map[String, String] =
+        immutable$Map.empty[String, String]
+    
+      /**
+       * Checks that all required fields are non-null.
+       */
+      def validate(_item: Result): Unit = {
+      }
+    
+      def withoutPassthroughFields(original: Result): Result =
+        new Result(
+          success =
+            {
+              val field = original.success
+              field.map { field =>
+                com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse.withoutPassthroughFields(field)
+              }
+            }
+        )
+    
+      override def encode(_item: Result, _oproto: TProtocol): Unit = {
+        _item.write(_oproto)
+      }
+    
+      override def decode(_iprot: TProtocol): Result = {
+        var success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
+        var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
+        var _done = false
+    
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 0 =>
+                _field.`type` match {
+                  case TType.STRUCT =>
+                    success = _root_.scala.Some(readSuccessValue(_iprot))
+                  case _actualType =>
+                    val _expectedType = TType.STRUCT
+                    throw new TProtocolException(
+                      "Received wrong type for field 'success' (expected=%s, actual=%s).".format(
+                        ttypeToString(_expectedType),
+                        ttypeToString(_actualType)
+                      )
+                    )
+                }
+              case _ =>
+                if (_passthroughFields == null)
+                  _passthroughFields = immutable$Map.newBuilder[Short, TFieldBlob]
+                _passthroughFields += (_field.id -> TFieldBlob.read(_field, _iprot))
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+    
+        new Result(
+          success,
+          if (_passthroughFields == null)
+            NoPassthroughFields
+          else
+            _passthroughFields.result()
+        )
+      }
+    
+      def apply(
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
+      ): Result =
+        new Result(
+          success
+        )
+    
+      def unapply(_item: Result): _root_.scala.Option[_root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]] = _root_.scala.Some(_item.success)
+    
+    
+      @inline private def readSuccessValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse = {
+        com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse.decode(_iprot)
+      }
+    
+      @inline private def writeSuccessField(success_item: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse, _oprot: TProtocol): Unit = {
+        _oprot.writeFieldBegin(SuccessField)
+        writeSuccessValue(success_item, _oprot)
+        _oprot.writeFieldEnd()
+      }
+    
+      @inline private def writeSuccessValue(success_item: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse, _oprot: TProtocol): Unit = {
+        success_item.write(_oprot)
+      }
+    
+    
+    }
+    
+    class Result(
+        val success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse],
+        val _passthroughFields: immutable$Map[Short, TFieldBlob])
+      extends ThriftResponse[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] with ThriftStruct
+      with scala.Product1[Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
+      with java.io.Serializable
+    {
+      import Result._
+      def this(
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
+      ) = this(
+        success,
+        Map.empty
+      )
+    
+      def _1 = success
+    
+      def successField: Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = success
+      def exceptionFields: Iterable[Option[com.twitter.scrooge.ThriftException]] = Seq()
+    
+    
+      override def write(_oprot: TProtocol): Unit = {
+        Result.validate(this)
+        _oprot.writeStructBegin(Struct)
+        if (success.isDefined) writeSuccessField(success.get, _oprot)
+        if (_passthroughFields.nonEmpty) {
+          _passthroughFields.values.foreach { _.write(_oprot) }
+        }
+        _oprot.writeFieldStop()
+        _oprot.writeStructEnd()
+      }
+    
+      def copy(
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = this.success,
+        _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
+      ): Result =
+        new Result(
+          success,
+          _passthroughFields
+        )
+    
+      override def canEqual(other: Any): Boolean = other.isInstanceOf[Result]
+    
+      override def equals(other: Any): Boolean =
+        canEqual(other) &&
+          _root_.scala.runtime.ScalaRunTime._equals(this, other) &&
+          _passthroughFields == other.asInstanceOf[Result]._passthroughFields
+    
+      override def hashCode: Int = _root_.scala.runtime.ScalaRunTime._hashCode(this)
+    
+      override def toString: String = _root_.scala.runtime.ScalaRunTime._toString(this)
+    
+    
+      override def productArity: Int = 1
+    
+      override def productElement(n: Int): Any = n match {
+        case 0 => this.success
+        case _ => throw new IndexOutOfBoundsException(n.toString)
+      }
+    
+      override def productPrefix: String = "Result"
+    }
+
+    type FunctionType = Function1[Args,Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
+    type ServiceType = com.twitter.finagle.Service[Args, Result]
+
+    private[this] val toResult = (res: SuccessType) => Result(Some(res))
+
+    def functionToService(f: FunctionType): ServiceType = {
+      com.twitter.finagle.Service.mk { args: Args =>
+        f(args).map(toResult)
+      }
+    }
+
+    def serviceToFunction(svc: ServiceType): FunctionType = { args: Args =>
+      ThriftServiceIface.resultFilter(this).andThen(svc).apply(args)
+    }
+
+    val name = "takeLandlord"
+    val serviceName = "GameEndpoint"
+    val argsCodec = Args
+    val responseCodec = Result
+    val oneway = false
+  }
+
+  // Compatibility aliases.
+  val takeLandlord$args = TakeLandlord.Args
+  type takeLandlord$args = TakeLandlord.Args
+
+  val takeLandlord$result = TakeLandlord.Result
+  type takeLandlord$result = TakeLandlord.Result
+
   object PlayCards extends com.twitter.scrooge.ThriftMethod {
     
     object Args extends ThriftStructCodec3[Args] {
@@ -2580,13 +3034,13 @@ object GameEndpoint { self =>
       override def productPrefix: String = "Args"
     }
 
-    type SuccessType = com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse
+    type SuccessType = com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse
     
     object Result extends ThriftStructCodec3[Result] {
       private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
       val Struct = new TStruct("playCards_result")
       val SuccessField = new TField("success", TType.STRUCT, 0)
-      val SuccessFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]]
+      val SuccessFieldManifest = implicitly[Manifest[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
     
       /**
        * Field information in declaration order.
@@ -2619,7 +3073,7 @@ object GameEndpoint { self =>
             {
               val field = original.success
               field.map { field =>
-                com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse.withoutPassthroughFields(field)
+                com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse.withoutPassthroughFields(field)
               }
             }
         )
@@ -2629,7 +3083,7 @@ object GameEndpoint { self =>
       }
     
       override def decode(_iprot: TProtocol): Result = {
-        var success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] = _root_.scala.None
+        var success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
         var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
         var _done = false
     
@@ -2673,26 +3127,26 @@ object GameEndpoint { self =>
       }
     
       def apply(
-        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] = _root_.scala.None
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
       ): Result =
         new Result(
           success
         )
     
-      def unapply(_item: Result): _root_.scala.Option[_root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]] = _root_.scala.Some(_item.success)
+      def unapply(_item: Result): _root_.scala.Option[_root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]] = _root_.scala.Some(_item.success)
     
     
-      @inline private def readSuccessValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse = {
-        com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse.decode(_iprot)
+      @inline private def readSuccessValue(_iprot: TProtocol): com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse = {
+        com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse.decode(_iprot)
       }
     
-      @inline private def writeSuccessField(success_item: com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse, _oprot: TProtocol): Unit = {
+      @inline private def writeSuccessField(success_item: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse, _oprot: TProtocol): Unit = {
         _oprot.writeFieldBegin(SuccessField)
         writeSuccessValue(success_item, _oprot)
         _oprot.writeFieldEnd()
       }
     
-      @inline private def writeSuccessValue(success_item: com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse, _oprot: TProtocol): Unit = {
+      @inline private def writeSuccessValue(success_item: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse, _oprot: TProtocol): Unit = {
         success_item.write(_oprot)
       }
     
@@ -2700,15 +3154,15 @@ object GameEndpoint { self =>
     }
     
     class Result(
-        val success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse],
+        val success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse],
         val _passthroughFields: immutable$Map[Short, TFieldBlob])
-      extends ThriftResponse[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] with ThriftStruct
-      with scala.Product1[Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]]
+      extends ThriftResponse[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] with ThriftStruct
+      with scala.Product1[Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
       with java.io.Serializable
     {
       import Result._
       def this(
-        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] = _root_.scala.None
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = _root_.scala.None
       ) = this(
         success,
         Map.empty
@@ -2716,7 +3170,7 @@ object GameEndpoint { self =>
     
       def _1 = success
     
-      def successField: Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] = success
+      def successField: Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = success
       def exceptionFields: Iterable[Option[com.twitter.scrooge.ThriftException]] = Seq()
     
     
@@ -2732,7 +3186,7 @@ object GameEndpoint { self =>
       }
     
       def copy(
-        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse] = this.success,
+        success: _root_.scala.Option[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse] = this.success,
         _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
       ): Result =
         new Result(
@@ -2762,7 +3216,7 @@ object GameEndpoint { self =>
       override def productPrefix: String = "Result"
     }
 
-    type FunctionType = Function1[Args,Future[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]]
+    type FunctionType = Function1[Args,Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]]
     type ServiceType = com.twitter.finagle.Service[Args, Result]
 
     private[this] val toResult = (res: SuccessType) => Result(Some(res))
@@ -2804,7 +3258,9 @@ object GameEndpoint { self =>
     
     def joinGame(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.JoinGameRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
     
-    def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse]
+    def takeLandlord(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.TakeLandlordRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
+    
+    def playCards(traceId: String, request: com.jxjxgo.gamecenter.rpc.domain.PlayCardsRequest): Future[com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse]
   }
 
   class FinagledClient(

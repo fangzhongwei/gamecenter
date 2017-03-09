@@ -3,6 +3,8 @@ package com.jxjxgo.gamecenter.service
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
+import com.fasterxml.jackson.annotation.ObjectIdGenerators.UUIDGenerator
+import com.jxjxgo.common.helper.UUIDHelper
 import com.jxjxgo.common.redis.RedisClientTemplate
 import com.jxjxgo.gamecenter.domain.Seat
 import com.jxjxgo.gamecenter.repo.TowVsOneRepository
@@ -43,19 +45,22 @@ class GameNotifyServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
     //    5: i32 deviceType = 0,
     //    6: string cards = "",
     //    7: string landlordCards = "",
-    //    8: i32 baseAmount = 0,
-    //    9: i32 multiples = 0,
-    //    10: string previousNickname = "",
-    //    11: i32 previousCardsCount = 0,
-    //    12: string nextNickname = "",
-    //    13: i32 nextCardsCount = 0,
-    //    14: bool choosingLandlord = false,
-    //    15: bool landlord = false,
-    //    16: bool turnToPlay = false,
+    //    8: string proCardsInfo = "",
+    //    9: i32 baseAmount = 0,
+    //    10: i32 multiples = 0,
+    //    11: string previousNickname = "",
+    //    12: i32 previousCardsCount = 0,
+    //    13: string nextNickname = "",
+    //    14: i32 nextCardsCount = 0,
+    //    15: string playStatus = "",
+    //    16: bool landlord = false,
     //    17: string fingerPrint = "",
-    //    18: long memberId = "",
+    //    18: long memberId = 0,
+    //    19: long seatId = 0,
 
-    gameGatewayEndpoint.push(s.traceId, SocketResponse("0", "seatWatch", s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.choosingLandlord, s.landlord, s.turnToPlay, s.fingerPrint, s.memberId, "", "", "", ""))
+
+
+    gameGatewayEndpoint.push(UUIDHelper.generate(), SocketResponse("0", "seatWatch", s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.proCardsInfo, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.playStatus.getCode, s.landlord, s.fingerPrint, s.memberId, s.id.toString, "", "", ""))
   }
 
   def thriftClient(rpcHost: String): GameGatewayEndpoint[Future] = {

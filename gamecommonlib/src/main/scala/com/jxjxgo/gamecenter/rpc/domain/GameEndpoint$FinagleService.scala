@@ -301,6 +301,40 @@ class GameEndpoint$FinagleService(
       case e: Exception => Future.exception(e)
     }
   })
+  private[this] object __stats_takeLandlord {
+    val RequestsCounter = scopedStats.scope("takeLandlord").counter("requests")
+    val SuccessCounter = scopedStats.scope("takeLandlord").counter("success")
+    val FailuresCounter = scopedStats.scope("takeLandlord").counter("failures")
+    val FailuresScope = scopedStats.scope("takeLandlord").scope("failures")
+  }
+  addFunction("takeLandlord", { (iprot: TProtocol, seqid: Int) =>
+    try {
+      __stats_takeLandlord.RequestsCounter.incr()
+      val args = TakeLandlord.Args.decode(iprot)
+      iprot.readMessageEnd()
+      (try {
+        iface.takeLandlord(args.traceId, args.request)
+      } catch {
+        case e: Exception => Future.exception(e)
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
+        reply("takeLandlord", seqid, TakeLandlord.Result(success = Some(value)))
+      }.rescue {
+        case e => Future.exception(e)
+      }.respond {
+        case Return(_) =>
+          __stats_takeLandlord.SuccessCounter.incr()
+        case Throw(ex) =>
+          __stats_takeLandlord.FailuresCounter.incr()
+          __stats_takeLandlord.FailuresScope.counter(Throwables.mkString(ex): _*).incr()
+      }
+    } catch {
+      case e: TProtocolException => {
+        iprot.readMessageEnd()
+        exception("takeLandlord", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+      }
+      case e: Exception => Future.exception(e)
+    }
+  })
   private[this] object __stats_playCards {
     val RequestsCounter = scopedStats.scope("playCards").counter("requests")
     val SuccessCounter = scopedStats.scope("playCards").counter("success")
@@ -316,7 +350,7 @@ class GameEndpoint$FinagleService(
         iface.playCards(args.traceId, args.request)
       } catch {
         case e: Exception => Future.exception(e)
-      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.PlayCardsResponse =>
+      }).flatMap { value: com.jxjxgo.gamecenter.rpc.domain.GameBaseResponse =>
         reply("playCards", seqid, PlayCards.Result(success = Some(value)))
       }.rescue {
         case e => Future.exception(e)

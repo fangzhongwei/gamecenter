@@ -1,19 +1,17 @@
 package com.jxjxgo.gamecenter.enumnate;
 
 /**
- * Created by fangzhongwei on 2016/12/21.
+ * Created by fangzhongwei on 2017/3/7.
  */
-public enum GameStatus {
-    WaitingLandlord((short) 1, "WaitingLandlord"),
-    Aborted((short) -1, "Aborted"),
-    Playing((short) 9, "Playing"),
-    Finished((short) 19, "Finished"),
-    Settled((short) 99, "Settled");
+public enum  PlayType {
+    DecideYes((short) 1, "Decide"),
+    DecideNo((short) 2, "Decide"),
+    Play((short) 9, "Play");
 
     private short code;
     private String desc;
 
-    GameStatus(short code, String desc) {
+    PlayType(short code, String desc) {
         this.code = code;
         this.desc = desc;
     }
@@ -34,8 +32,8 @@ public enum GameStatus {
         this.desc = desc;
     }
 
-    public static GameStatus get(short code) {
-        for(GameStatus status: GameStatus.values()) {
+    public static PlayType get(short code) {
+        for(PlayType status: PlayType.values()) {
             if (status.getCode() == code) return status;
         }
         return null;
@@ -43,7 +41,7 @@ public enum GameStatus {
 
     @Override
     public String toString() {
-        return "GameStatus{" +
+        return "PlayType{" +
                 "code=" + code +
                 ", desc='" + desc + '\'' +
                 '}';

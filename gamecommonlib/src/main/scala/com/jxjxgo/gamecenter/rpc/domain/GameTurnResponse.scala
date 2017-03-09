@@ -47,12 +47,12 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
   val NextNicknameFieldManifest = implicitly[Manifest[String]]
   val NextCardsCountField = new TField("nextCardsCount", TType.I32, 11)
   val NextCardsCountFieldManifest = implicitly[Manifest[Int]]
-  val ChoosingLandlordField = new TField("choosingLandlord", TType.BOOL, 12)
-  val ChoosingLandlordFieldManifest = implicitly[Manifest[Boolean]]
+  val PlayStatusField = new TField("playStatus", TType.STRING, 12)
+  val PlayStatusFieldManifest = implicitly[Manifest[String]]
   val LandlordField = new TField("landlord", TType.BOOL, 13)
   val LandlordFieldManifest = implicitly[Manifest[Boolean]]
-  val TurnToPlayField = new TField("turnToPlay", TType.BOOL, 14)
-  val TurnToPlayFieldManifest = implicitly[Manifest[Boolean]]
+  val SeqInGameField = new TField("seqInGame", TType.I32, 14)
+  val SeqInGameFieldManifest = implicitly[Manifest[Int]]
 
   /**
    * Field information in declaration order.
@@ -169,10 +169,10 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      ChoosingLandlordField,
+      PlayStatusField,
       false,
       false,
-      ChoosingLandlordFieldManifest,
+      PlayStatusFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
       immutable$Map.empty[String, String],
@@ -189,10 +189,10 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      TurnToPlayField,
+      SeqInGameField,
       false,
       false,
-      TurnToPlayFieldManifest,
+      SeqInGameFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
       immutable$Map.empty[String, String],
@@ -266,9 +266,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
           val field = original.nextCardsCount
           field
         },
-      choosingLandlord =
+      playStatus =
         {
-          val field = original.choosingLandlord
+          val field = original.playStatus
           field
         },
       landlord =
@@ -276,9 +276,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
           val field = original.landlord
           field
         },
-      turnToPlay =
+      seqInGame =
         {
-          val field = original.turnToPlay
+          val field = original.seqInGame
           field
         }
     )
@@ -300,9 +300,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     var previousCardsCount: Int = 0
     var nextNicknameOffset: Int = -1
     var nextCardsCount: Int = 0
-    var choosingLandlord: Boolean = false
+    var playStatusOffset: Int = -1
     var landlord: Boolean = false
-    var turnToPlay: Boolean = false
+    var seqInGame: Int = 0
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -471,13 +471,13 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
             }
           case 12 =>
             _field.`type` match {
-              case TType.BOOL =>
+              case TType.STRING =>
+                playStatusOffset = _iprot.offsetSkipString
     
-                choosingLandlord = readChoosingLandlordValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.BOOL
+                val _expectedType = TType.STRING
                 throw new TProtocolException(
-                  "Received wrong type for field 'choosingLandlord' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'playStatus' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -499,13 +499,13 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
             }
           case 14 =>
             _field.`type` match {
-              case TType.BOOL =>
+              case TType.I32 =>
     
-                turnToPlay = readTurnToPlayValue(_iprot)
+                seqInGame = readSeqInGameValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.BOOL
+                val _expectedType = TType.I32
                 throw new TProtocolException(
-                  "Received wrong type for field 'turnToPlay' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'seqInGame' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -537,9 +537,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       previousCardsCount,
       nextNicknameOffset,
       nextCardsCount,
-      choosingLandlord,
+      playStatusOffset,
       landlord,
-      turnToPlay,
+      seqInGame,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -565,9 +565,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     var previousCardsCount: Int = 0
     var nextNickname: String = ""
     var nextCardsCount: Int = 0
-    var choosingLandlord: Boolean = false
+    var playStatus: String = ""
     var landlord: Boolean = false
-    var turnToPlay: Boolean = false
+    var seqInGame: Int = 0
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -723,12 +723,12 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
             }
           case 12 =>
             _field.`type` match {
-              case TType.BOOL =>
-                choosingLandlord = readChoosingLandlordValue(_iprot)
+              case TType.STRING =>
+                playStatus = readPlayStatusValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.BOOL
+                val _expectedType = TType.STRING
                 throw new TProtocolException(
-                  "Received wrong type for field 'choosingLandlord' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'playStatus' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -749,12 +749,12 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
             }
           case 14 =>
             _field.`type` match {
-              case TType.BOOL =>
-                turnToPlay = readTurnToPlayValue(_iprot)
+              case TType.I32 =>
+                seqInGame = readSeqInGameValue(_iprot)
               case _actualType =>
-                val _expectedType = TType.BOOL
+                val _expectedType = TType.I32
                 throw new TProtocolException(
-                  "Received wrong type for field 'turnToPlay' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'seqInGame' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -782,9 +782,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       previousCardsCount,
       nextNickname,
       nextCardsCount,
-      choosingLandlord,
+      playStatus,
       landlord,
-      turnToPlay,
+      seqInGame,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -804,9 +804,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     previousCardsCount: Int = 0,
     nextNickname: String = "",
     nextCardsCount: Int = 0,
-    choosingLandlord: Boolean = false,
+    playStatus: String = "",
     landlord: Boolean = false,
-    turnToPlay: Boolean = false
+    seqInGame: Int = 0
   ): GameTurnResponse =
     new Immutable(
       gameId,
@@ -820,12 +820,12 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       previousCardsCount,
       nextNickname,
       nextCardsCount,
-      choosingLandlord,
+      playStatus,
       landlord,
-      turnToPlay
+      seqInGame
     )
 
-  def unapply(_item: GameTurnResponse): _root_.scala.Option[scala.Product14[Long, Int, Int, String, String, Int, Int, String, Int, String, Int, Boolean, Boolean, Boolean]] = _root_.scala.Some(_item)
+  def unapply(_item: GameTurnResponse): _root_.scala.Option[scala.Product14[Long, Int, Int, String, String, Int, Int, String, Int, String, Int, String, Boolean, Int]] = _root_.scala.Some(_item)
 
 
   @inline private def readGameIdValue(_iprot: TProtocol): Long = {
@@ -982,18 +982,18 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     _oprot.writeI32(nextCardsCount_item)
   }
 
-  @inline private def readChoosingLandlordValue(_iprot: TProtocol): Boolean = {
-    _iprot.readBool()
+  @inline private def readPlayStatusValue(_iprot: TProtocol): String = {
+    _iprot.readString()
   }
 
-  @inline private def writeChoosingLandlordField(choosingLandlord_item: Boolean, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(ChoosingLandlordField)
-    writeChoosingLandlordValue(choosingLandlord_item, _oprot)
+  @inline private def writePlayStatusField(playStatus_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(PlayStatusField)
+    writePlayStatusValue(playStatus_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeChoosingLandlordValue(choosingLandlord_item: Boolean, _oprot: TProtocol): Unit = {
-    _oprot.writeBool(choosingLandlord_item)
+  @inline private def writePlayStatusValue(playStatus_item: String, _oprot: TProtocol): Unit = {
+    _oprot.writeString(playStatus_item)
   }
 
   @inline private def readLandlordValue(_iprot: TProtocol): Boolean = {
@@ -1010,18 +1010,18 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     _oprot.writeBool(landlord_item)
   }
 
-  @inline private def readTurnToPlayValue(_iprot: TProtocol): Boolean = {
-    _iprot.readBool()
+  @inline private def readSeqInGameValue(_iprot: TProtocol): Int = {
+    _iprot.readI32()
   }
 
-  @inline private def writeTurnToPlayField(turnToPlay_item: Boolean, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(TurnToPlayField)
-    writeTurnToPlayValue(turnToPlay_item, _oprot)
+  @inline private def writeSeqInGameField(seqInGame_item: Int, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(SeqInGameField)
+    writeSeqInGameValue(seqInGame_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeTurnToPlayValue(turnToPlay_item: Boolean, _oprot: TProtocol): Unit = {
-    _oprot.writeBool(turnToPlay_item)
+  @inline private def writeSeqInGameValue(seqInGame_item: Int, _oprot: TProtocol): Unit = {
+    _oprot.writeI32(seqInGame_item)
   }
 
 
@@ -1048,9 +1048,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       val previousCardsCount: Int,
       val nextNickname: String,
       val nextCardsCount: Int,
-      val choosingLandlord: Boolean,
+      val playStatus: String,
       val landlord: Boolean,
-      val turnToPlay: Boolean,
+      val seqInGame: Int,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends GameTurnResponse {
     def this(
@@ -1065,9 +1065,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       previousCardsCount: Int = 0,
       nextNickname: String = "",
       nextCardsCount: Int = 0,
-      choosingLandlord: Boolean = false,
+      playStatus: String = "",
       landlord: Boolean = false,
-      turnToPlay: Boolean = false
+      seqInGame: Int = 0
     ) = this(
       gameId,
       gameType,
@@ -1080,9 +1080,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       previousCardsCount,
       nextNickname,
       nextCardsCount,
-      choosingLandlord,
+      playStatus,
       landlord,
-      turnToPlay,
+      seqInGame,
       Map.empty
     )
   }
@@ -1107,9 +1107,9 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       val previousCardsCount: Int,
       nextNicknameOffset: Int,
       val nextCardsCount: Int,
-      val choosingLandlord: Boolean,
+      playStatusOffset: Int,
       val landlord: Boolean,
-      val turnToPlay: Boolean,
+      val seqInGame: Int,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
     extends GameTurnResponse {
 
@@ -1144,6 +1144,12 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
       else {
         _proto.decodeString(_buf, nextNicknameOffset)
       }
+    lazy val playStatus: String =
+      if (playStatusOffset == -1)
+        ""
+      else {
+        _proto.decodeString(_buf, playStatusOffset)
+      }
 
     /**
      * Override the super hash code to make it a lazy val rather than def.
@@ -1177,16 +1183,16 @@ object GameTurnResponse extends ThriftStructCodec3[GameTurnResponse] {
     override def previousCardsCount: Int = _underlying_GameTurnResponse.previousCardsCount
     override def nextNickname: String = _underlying_GameTurnResponse.nextNickname
     override def nextCardsCount: Int = _underlying_GameTurnResponse.nextCardsCount
-    override def choosingLandlord: Boolean = _underlying_GameTurnResponse.choosingLandlord
+    override def playStatus: String = _underlying_GameTurnResponse.playStatus
     override def landlord: Boolean = _underlying_GameTurnResponse.landlord
-    override def turnToPlay: Boolean = _underlying_GameTurnResponse.turnToPlay
+    override def seqInGame: Int = _underlying_GameTurnResponse.seqInGame
     override def _passthroughFields = _underlying_GameTurnResponse._passthroughFields
   }
 }
 
 trait GameTurnResponse
   extends ThriftStruct
-  with scala.Product14[Long, Int, Int, String, String, Int, Int, String, Int, String, Int, Boolean, Boolean, Boolean]
+  with scala.Product14[Long, Int, Int, String, String, Int, Int, String, Int, String, Int, String, Boolean, Int]
   with java.io.Serializable
 {
   import GameTurnResponse._
@@ -1202,9 +1208,9 @@ trait GameTurnResponse
   def previousCardsCount: Int
   def nextNickname: String
   def nextCardsCount: Int
-  def choosingLandlord: Boolean
+  def playStatus: String
   def landlord: Boolean
-  def turnToPlay: Boolean
+  def seqInGame: Int
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
@@ -1219,9 +1225,9 @@ trait GameTurnResponse
   def _9 = previousCardsCount
   def _10 = nextNickname
   def _11 = nextCardsCount
-  def _12 = choosingLandlord
+  def _12 = playStatus
   def _13 = landlord
-  def _14 = turnToPlay
+  def _14 = seqInGame
 
 
   /**
@@ -1315,9 +1321,9 @@ trait GameTurnResponse
                 _root_.scala.None
               }
             case 12 =>
-              if (true) {
-                writeChoosingLandlordValue(choosingLandlord, _oprot)
-                _root_.scala.Some(GameTurnResponse.ChoosingLandlordField)
+              if (playStatus ne null) {
+                writePlayStatusValue(playStatus, _oprot)
+                _root_.scala.Some(GameTurnResponse.PlayStatusField)
               } else {
                 _root_.scala.None
               }
@@ -1330,8 +1336,8 @@ trait GameTurnResponse
               }
             case 14 =>
               if (true) {
-                writeTurnToPlayValue(turnToPlay, _oprot)
-                _root_.scala.Some(GameTurnResponse.TurnToPlayField)
+                writeSeqInGameValue(seqInGame, _oprot)
+                _root_.scala.Some(GameTurnResponse.SeqInGameField)
               } else {
                 _root_.scala.None
               }
@@ -1372,9 +1378,9 @@ trait GameTurnResponse
     var previousCardsCount: Int = this.previousCardsCount
     var nextNickname: String = this.nextNickname
     var nextCardsCount: Int = this.nextCardsCount
-    var choosingLandlord: Boolean = this.choosingLandlord
+    var playStatus: String = this.playStatus
     var landlord: Boolean = this.landlord
-    var turnToPlay: Boolean = this.turnToPlay
+    var seqInGame: Int = this.seqInGame
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
@@ -1400,11 +1406,11 @@ trait GameTurnResponse
       case 11 =>
         nextCardsCount = readNextCardsCountValue(_blob.read)
       case 12 =>
-        choosingLandlord = readChoosingLandlordValue(_blob.read)
+        playStatus = readPlayStatusValue(_blob.read)
       case 13 =>
         landlord = readLandlordValue(_blob.read)
       case 14 =>
-        turnToPlay = readTurnToPlayValue(_blob.read)
+        seqInGame = readSeqInGameValue(_blob.read)
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
@@ -1419,9 +1425,9 @@ trait GameTurnResponse
       previousCardsCount,
       nextNickname,
       nextCardsCount,
-      choosingLandlord,
+      playStatus,
       landlord,
-      turnToPlay,
+      seqInGame,
       _passthroughFields
     )
   }
@@ -1443,9 +1449,9 @@ trait GameTurnResponse
     var previousCardsCount: Int = this.previousCardsCount
     var nextNickname: String = this.nextNickname
     var nextCardsCount: Int = this.nextCardsCount
-    var choosingLandlord: Boolean = this.choosingLandlord
+    var playStatus: String = this.playStatus
     var landlord: Boolean = this.landlord
-    var turnToPlay: Boolean = this.turnToPlay
+    var seqInGame: Int = this.seqInGame
 
     _fieldId match {
       case 1 =>
@@ -1471,11 +1477,11 @@ trait GameTurnResponse
       case 11 =>
         nextCardsCount = 0
       case 12 =>
-        choosingLandlord = false
+        playStatus = ""
       case 13 =>
         landlord = false
       case 14 =>
-        turnToPlay = false
+        seqInGame = 0
       case _ =>
     }
     new Immutable(
@@ -1490,9 +1496,9 @@ trait GameTurnResponse
       previousCardsCount,
       nextNickname,
       nextCardsCount,
-      choosingLandlord,
+      playStatus,
       landlord,
-      turnToPlay,
+      seqInGame,
       _passthroughFields - _fieldId
     )
   }
@@ -1524,11 +1530,11 @@ trait GameTurnResponse
 
   def unsetNextCardsCount: GameTurnResponse = unsetField(11)
 
-  def unsetChoosingLandlord: GameTurnResponse = unsetField(12)
+  def unsetPlayStatus: GameTurnResponse = unsetField(12)
 
   def unsetLandlord: GameTurnResponse = unsetField(13)
 
-  def unsetTurnToPlay: GameTurnResponse = unsetField(14)
+  def unsetSeqInGame: GameTurnResponse = unsetField(14)
 
 
   override def write(_oprot: TProtocol): Unit = {
@@ -1545,9 +1551,9 @@ trait GameTurnResponse
     writePreviousCardsCountField(previousCardsCount, _oprot)
     if (nextNickname ne null) writeNextNicknameField(nextNickname, _oprot)
     writeNextCardsCountField(nextCardsCount, _oprot)
-    writeChoosingLandlordField(choosingLandlord, _oprot)
+    if (playStatus ne null) writePlayStatusField(playStatus, _oprot)
     writeLandlordField(landlord, _oprot)
-    writeTurnToPlayField(turnToPlay, _oprot)
+    writeSeqInGameField(seqInGame, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -1567,9 +1573,9 @@ trait GameTurnResponse
     previousCardsCount: Int = this.previousCardsCount,
     nextNickname: String = this.nextNickname,
     nextCardsCount: Int = this.nextCardsCount,
-    choosingLandlord: Boolean = this.choosingLandlord,
+    playStatus: String = this.playStatus,
     landlord: Boolean = this.landlord,
-    turnToPlay: Boolean = this.turnToPlay,
+    seqInGame: Int = this.seqInGame,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
   ): GameTurnResponse =
     new Immutable(
@@ -1584,9 +1590,9 @@ trait GameTurnResponse
       previousCardsCount,
       nextNickname,
       nextCardsCount,
-      choosingLandlord,
+      playStatus,
       landlord,
-      turnToPlay,
+      seqInGame,
       _passthroughFields
     )
 
@@ -1616,9 +1622,9 @@ trait GameTurnResponse
     case 8 => this.previousCardsCount
     case 9 => this.nextNickname
     case 10 => this.nextCardsCount
-    case 11 => this.choosingLandlord
+    case 11 => this.playStatus
     case 12 => this.landlord
-    case 13 => this.turnToPlay
+    case 13 => this.seqInGame
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 

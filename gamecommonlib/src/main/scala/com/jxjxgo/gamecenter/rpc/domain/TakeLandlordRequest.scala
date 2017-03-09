@@ -22,30 +22,22 @@ import scala.collection.mutable.{
 import scala.collection.{Map, Set}
 
 
-object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusResponse] {
+object TakeLandlordRequest extends ThriftStructCodec3[TakeLandlordRequest] {
   private val NoPassthroughFields = immutable$Map.empty[Short, TFieldBlob]
-  val Struct = new TStruct("CheckGameStatusResponse")
-  val CodeField = new TField("code", TType.STRING, 1)
-  val CodeFieldManifest = implicitly[Manifest[String]]
-  val MemberIdField = new TField("memberId", TType.I64, 2)
+  val Struct = new TStruct("TakeLandlordRequest")
+  val MemberIdField = new TField("memberId", TType.I64, 1)
   val MemberIdFieldManifest = implicitly[Manifest[Long]]
-  val ReconnectField = new TField("reconnect", TType.BOOL, 3)
-  val ReconnectFieldManifest = implicitly[Manifest[Boolean]]
+  val GameIdField = new TField("gameId", TType.I64, 2)
+  val GameIdFieldManifest = implicitly[Manifest[Long]]
+  val SeatIdField = new TField("seatId", TType.I64, 3)
+  val SeatIdFieldManifest = implicitly[Manifest[Long]]
+  val TakeField = new TField("take", TType.BOOL, 4)
+  val TakeFieldManifest = implicitly[Manifest[Boolean]]
 
   /**
    * Field information in declaration order.
    */
   lazy val fieldInfos: scala.List[ThriftStructFieldInfo] = scala.List[ThriftStructFieldInfo](
-    new ThriftStructFieldInfo(
-      CodeField,
-      false,
-      false,
-      CodeFieldManifest,
-      _root_.scala.None,
-      _root_.scala.None,
-      immutable$Map.empty[String, String],
-      immutable$Map.empty[String, String]
-    ),
     new ThriftStructFieldInfo(
       MemberIdField,
       false,
@@ -57,10 +49,30 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       immutable$Map.empty[String, String]
     ),
     new ThriftStructFieldInfo(
-      ReconnectField,
+      GameIdField,
       false,
       false,
-      ReconnectFieldManifest,
+      GameIdFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      SeatIdField,
+      false,
+      false,
+      SeatIdFieldManifest,
+      _root_.scala.None,
+      _root_.scala.None,
+      immutable$Map.empty[String, String],
+      immutable$Map.empty[String, String]
+    ),
+    new ThriftStructFieldInfo(
+      TakeField,
+      false,
+      false,
+      TakeFieldManifest,
       _root_.scala.None,
       _root_.scala.None,
       immutable$Map.empty[String, String],
@@ -74,37 +86,43 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
   /**
    * Checks that all required fields are non-null.
    */
-  def validate(_item: CheckGameStatusResponse): Unit = {
+  def validate(_item: TakeLandlordRequest): Unit = {
   }
 
-  def withoutPassthroughFields(original: CheckGameStatusResponse): CheckGameStatusResponse =
+  def withoutPassthroughFields(original: TakeLandlordRequest): TakeLandlordRequest =
     new Immutable(
-      code =
-        {
-          val field = original.code
-          field
-        },
       memberId =
         {
           val field = original.memberId
           field
         },
-      reconnect =
+      gameId =
         {
-          val field = original.reconnect
+          val field = original.gameId
+          field
+        },
+      seatId =
+        {
+          val field = original.seatId
+          field
+        },
+      take =
+        {
+          val field = original.take
           field
         }
     )
 
-  override def encode(_item: CheckGameStatusResponse, _oproto: TProtocol): Unit = {
+  override def encode(_item: TakeLandlordRequest, _oproto: TProtocol): Unit = {
     _item.write(_oproto)
   }
 
-  private[this] def lazyDecode(_iprot: LazyTProtocol): CheckGameStatusResponse = {
+  private[this] def lazyDecode(_iprot: LazyTProtocol): TakeLandlordRequest = {
 
-    var codeOffset: Int = -1
     var memberId: Long = 0L
-    var reconnect: Boolean = false
+    var gameId: Long = 0L
+    var seatId: Long = 0L
+    var take: Boolean = false
 
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
@@ -119,20 +137,6 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
         _field.id match {
           case 1 =>
             _field.`type` match {
-              case TType.STRING =>
-                codeOffset = _iprot.offsetSkipString
-    
-              case _actualType =>
-                val _expectedType = TType.STRING
-                throw new TProtocolException(
-                  "Received wrong type for field 'code' (expected=%s, actual=%s).".format(
-                    ttypeToString(_expectedType),
-                    ttypeToString(_actualType)
-                  )
-                )
-            }
-          case 2 =>
-            _field.`type` match {
               case TType.I64 =>
     
                 memberId = readMemberIdValue(_iprot)
@@ -145,15 +149,43 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
                   )
                 )
             }
+          case 2 =>
+            _field.`type` match {
+              case TType.I64 =>
+    
+                gameId = readGameIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'gameId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
           case 3 =>
+            _field.`type` match {
+              case TType.I64 =>
+    
+                seatId = readSeatIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'seatId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 4 =>
             _field.`type` match {
               case TType.BOOL =>
     
-                reconnect = readReconnectValue(_iprot)
+                take = readTakeValue(_iprot)
               case _actualType =>
                 val _expectedType = TType.BOOL
                 throw new TProtocolException(
-                  "Received wrong type for field 'reconnect' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'take' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -174,9 +206,10 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       _iprot.buffer,
       _start_offset,
       _iprot.offset,
-      codeOffset,
       memberId,
-      reconnect,
+      gameId,
+      seatId,
+      take,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -184,16 +217,17 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
     )
   }
 
-  override def decode(_iprot: TProtocol): CheckGameStatusResponse =
+  override def decode(_iprot: TProtocol): TakeLandlordRequest =
     _iprot match {
       case i: LazyTProtocol => lazyDecode(i)
       case i => eagerDecode(i)
     }
 
-  private[this] def eagerDecode(_iprot: TProtocol): CheckGameStatusResponse = {
-    var code: String = ""
+  private[this] def eagerDecode(_iprot: TProtocol): TakeLandlordRequest = {
     var memberId: Long = 0L
-    var reconnect: Boolean = false
+    var gameId: Long = 0L
+    var seatId: Long = 0L
+    var take: Boolean = false
     var _passthroughFields: Builder[(Short, TFieldBlob), immutable$Map[Short, TFieldBlob]] = null
     var _done = false
 
@@ -206,19 +240,6 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
         _field.id match {
           case 1 =>
             _field.`type` match {
-              case TType.STRING =>
-                code = readCodeValue(_iprot)
-              case _actualType =>
-                val _expectedType = TType.STRING
-                throw new TProtocolException(
-                  "Received wrong type for field 'code' (expected=%s, actual=%s).".format(
-                    ttypeToString(_expectedType),
-                    ttypeToString(_actualType)
-                  )
-                )
-            }
-          case 2 =>
-            _field.`type` match {
               case TType.I64 =>
                 memberId = readMemberIdValue(_iprot)
               case _actualType =>
@@ -230,14 +251,40 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
                   )
                 )
             }
+          case 2 =>
+            _field.`type` match {
+              case TType.I64 =>
+                gameId = readGameIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'gameId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
           case 3 =>
             _field.`type` match {
+              case TType.I64 =>
+                seatId = readSeatIdValue(_iprot)
+              case _actualType =>
+                val _expectedType = TType.I64
+                throw new TProtocolException(
+                  "Received wrong type for field 'seatId' (expected=%s, actual=%s).".format(
+                    ttypeToString(_expectedType),
+                    ttypeToString(_actualType)
+                  )
+                )
+            }
+          case 4 =>
+            _field.`type` match {
               case TType.BOOL =>
-                reconnect = readReconnectValue(_iprot)
+                take = readTakeValue(_iprot)
               case _actualType =>
                 val _expectedType = TType.BOOL
                 throw new TProtocolException(
-                  "Received wrong type for field 'reconnect' (expected=%s, actual=%s).".format(
+                  "Received wrong type for field 'take' (expected=%s, actual=%s).".format(
                     ttypeToString(_expectedType),
                     ttypeToString(_actualType)
                   )
@@ -254,9 +301,10 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
     _iprot.readStructEnd()
 
     new Immutable(
-      code,
       memberId,
-      reconnect,
+      gameId,
+      seatId,
+      take,
       if (_passthroughFields == null)
         NoPassthroughFields
       else
@@ -265,32 +313,20 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
   }
 
   def apply(
-    code: String = "",
     memberId: Long = 0L,
-    reconnect: Boolean = false
-  ): CheckGameStatusResponse =
+    gameId: Long = 0L,
+    seatId: Long = 0L,
+    take: Boolean = false
+  ): TakeLandlordRequest =
     new Immutable(
-      code,
       memberId,
-      reconnect
+      gameId,
+      seatId,
+      take
     )
 
-  def unapply(_item: CheckGameStatusResponse): _root_.scala.Option[scala.Product3[String, Long, Boolean]] = _root_.scala.Some(_item)
+  def unapply(_item: TakeLandlordRequest): _root_.scala.Option[scala.Product4[Long, Long, Long, Boolean]] = _root_.scala.Some(_item)
 
-
-  @inline private def readCodeValue(_iprot: TProtocol): String = {
-    _iprot.readString()
-  }
-
-  @inline private def writeCodeField(code_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(CodeField)
-    writeCodeValue(code_item, _oprot)
-    _oprot.writeFieldEnd()
-  }
-
-  @inline private def writeCodeValue(code_item: String, _oprot: TProtocol): Unit = {
-    _oprot.writeString(code_item)
-  }
 
   @inline private def readMemberIdValue(_iprot: TProtocol): Long = {
     _iprot.readI64()
@@ -306,46 +342,77 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
     _oprot.writeI64(memberId_item)
   }
 
-  @inline private def readReconnectValue(_iprot: TProtocol): Boolean = {
-    _iprot.readBool()
+  @inline private def readGameIdValue(_iprot: TProtocol): Long = {
+    _iprot.readI64()
   }
 
-  @inline private def writeReconnectField(reconnect_item: Boolean, _oprot: TProtocol): Unit = {
-    _oprot.writeFieldBegin(ReconnectField)
-    writeReconnectValue(reconnect_item, _oprot)
+  @inline private def writeGameIdField(gameId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(GameIdField)
+    writeGameIdValue(gameId_item, _oprot)
     _oprot.writeFieldEnd()
   }
 
-  @inline private def writeReconnectValue(reconnect_item: Boolean, _oprot: TProtocol): Unit = {
-    _oprot.writeBool(reconnect_item)
+  @inline private def writeGameIdValue(gameId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeI64(gameId_item)
+  }
+
+  @inline private def readSeatIdValue(_iprot: TProtocol): Long = {
+    _iprot.readI64()
+  }
+
+  @inline private def writeSeatIdField(seatId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(SeatIdField)
+    writeSeatIdValue(seatId_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeSeatIdValue(seatId_item: Long, _oprot: TProtocol): Unit = {
+    _oprot.writeI64(seatId_item)
+  }
+
+  @inline private def readTakeValue(_iprot: TProtocol): Boolean = {
+    _iprot.readBool()
+  }
+
+  @inline private def writeTakeField(take_item: Boolean, _oprot: TProtocol): Unit = {
+    _oprot.writeFieldBegin(TakeField)
+    writeTakeValue(take_item, _oprot)
+    _oprot.writeFieldEnd()
+  }
+
+  @inline private def writeTakeValue(take_item: Boolean, _oprot: TProtocol): Unit = {
+    _oprot.writeBool(take_item)
   }
 
 
-  object Immutable extends ThriftStructCodec3[CheckGameStatusResponse] {
-    override def encode(_item: CheckGameStatusResponse, _oproto: TProtocol): Unit = { _item.write(_oproto) }
-    override def decode(_iprot: TProtocol): CheckGameStatusResponse = CheckGameStatusResponse.decode(_iprot)
-    override lazy val metaData: ThriftStructMetaData[CheckGameStatusResponse] = CheckGameStatusResponse.metaData
+  object Immutable extends ThriftStructCodec3[TakeLandlordRequest] {
+    override def encode(_item: TakeLandlordRequest, _oproto: TProtocol): Unit = { _item.write(_oproto) }
+    override def decode(_iprot: TProtocol): TakeLandlordRequest = TakeLandlordRequest.decode(_iprot)
+    override lazy val metaData: ThriftStructMetaData[TakeLandlordRequest] = TakeLandlordRequest.metaData
   }
 
   /**
-   * The default read-only implementation of CheckGameStatusResponse.  You typically should not need to
-   * directly reference this class; instead, use the CheckGameStatusResponse.apply method to construct
+   * The default read-only implementation of TakeLandlordRequest.  You typically should not need to
+   * directly reference this class; instead, use the TakeLandlordRequest.apply method to construct
    * new instances.
    */
   class Immutable(
-      val code: String,
       val memberId: Long,
-      val reconnect: Boolean,
+      val gameId: Long,
+      val seatId: Long,
+      val take: Boolean,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends CheckGameStatusResponse {
+    extends TakeLandlordRequest {
     def this(
-      code: String = "",
       memberId: Long = 0L,
-      reconnect: Boolean = false
+      gameId: Long = 0L,
+      seatId: Long = 0L,
+      take: Boolean = false
     ) = this(
-      code,
       memberId,
-      reconnect,
+      gameId,
+      seatId,
+      take,
       Map.empty
     )
   }
@@ -359,11 +426,12 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       _buf: Array[Byte],
       _start_offset: Int,
       _end_offset: Int,
-      codeOffset: Int,
       val memberId: Long,
-      val reconnect: Boolean,
+      val gameId: Long,
+      val seatId: Long,
+      val take: Boolean,
       override val _passthroughFields: immutable$Map[Short, TFieldBlob])
-    extends CheckGameStatusResponse {
+    extends TakeLandlordRequest {
 
     override def write(_oprot: TProtocol): Unit = {
       _oprot match {
@@ -372,12 +440,6 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
       }
     }
 
-    lazy val code: String =
-      if (codeOffset == -1)
-        ""
-      else {
-        _proto.decodeString(_buf, codeOffset)
-      }
 
     /**
      * Override the super hash code to make it a lazy val rather than def.
@@ -394,35 +456,38 @@ object CheckGameStatusResponse extends ThriftStructCodec3[CheckGameStatusRespons
   }
 
   /**
-   * This Proxy trait allows you to extend the CheckGameStatusResponse trait with additional state or
-   * behavior and implement the read-only methods from CheckGameStatusResponse using an underlying
+   * This Proxy trait allows you to extend the TakeLandlordRequest trait with additional state or
+   * behavior and implement the read-only methods from TakeLandlordRequest using an underlying
    * instance.
    */
-  trait Proxy extends CheckGameStatusResponse {
-    protected def _underlying_CheckGameStatusResponse: CheckGameStatusResponse
-    override def code: String = _underlying_CheckGameStatusResponse.code
-    override def memberId: Long = _underlying_CheckGameStatusResponse.memberId
-    override def reconnect: Boolean = _underlying_CheckGameStatusResponse.reconnect
-    override def _passthroughFields = _underlying_CheckGameStatusResponse._passthroughFields
+  trait Proxy extends TakeLandlordRequest {
+    protected def _underlying_TakeLandlordRequest: TakeLandlordRequest
+    override def memberId: Long = _underlying_TakeLandlordRequest.memberId
+    override def gameId: Long = _underlying_TakeLandlordRequest.gameId
+    override def seatId: Long = _underlying_TakeLandlordRequest.seatId
+    override def take: Boolean = _underlying_TakeLandlordRequest.take
+    override def _passthroughFields = _underlying_TakeLandlordRequest._passthroughFields
   }
 }
 
-trait CheckGameStatusResponse
+trait TakeLandlordRequest
   extends ThriftStruct
-  with scala.Product3[String, Long, Boolean]
+  with scala.Product4[Long, Long, Long, Boolean]
   with java.io.Serializable
 {
-  import CheckGameStatusResponse._
+  import TakeLandlordRequest._
 
-  def code: String
   def memberId: Long
-  def reconnect: Boolean
+  def gameId: Long
+  def seatId: Long
+  def take: Boolean
 
   def _passthroughFields: immutable$Map[Short, TFieldBlob] = immutable$Map.empty
 
-  def _1 = code
-  def _2 = memberId
-  def _3 = reconnect
+  def _1 = memberId
+  def _2 = gameId
+  def _3 = seatId
+  def _4 = take
 
 
   /**
@@ -439,23 +504,30 @@ trait CheckGameStatusResponse
         val _fieldOpt: _root_.scala.Option[TField] =
           _fieldId match {
             case 1 =>
-              if (code ne null) {
-                writeCodeValue(code, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.CodeField)
+              if (true) {
+                writeMemberIdValue(memberId, _oprot)
+                _root_.scala.Some(TakeLandlordRequest.MemberIdField)
               } else {
                 _root_.scala.None
               }
             case 2 =>
               if (true) {
-                writeMemberIdValue(memberId, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.MemberIdField)
+                writeGameIdValue(gameId, _oprot)
+                _root_.scala.Some(TakeLandlordRequest.GameIdField)
               } else {
                 _root_.scala.None
               }
             case 3 =>
               if (true) {
-                writeReconnectValue(reconnect, _oprot)
-                _root_.scala.Some(CheckGameStatusResponse.ReconnectField)
+                writeSeatIdValue(seatId, _oprot)
+                _root_.scala.Some(TakeLandlordRequest.SeatIdField)
+              } else {
+                _root_.scala.None
+              }
+            case 4 =>
+              if (true) {
+                writeTakeValue(take, _oprot)
+                _root_.scala.Some(TakeLandlordRequest.TakeField)
               } else {
                 _root_.scala.None
               }
@@ -484,24 +556,28 @@ trait CheckGameStatusResponse
    * is unknown and passthrough fields are enabled, then the blob will be stored in
    * _passthroughFields.
    */
-  def setField(_blob: TFieldBlob): CheckGameStatusResponse = {
-    var code: String = this.code
+  def setField(_blob: TFieldBlob): TakeLandlordRequest = {
     var memberId: Long = this.memberId
-    var reconnect: Boolean = this.reconnect
+    var gameId: Long = this.gameId
+    var seatId: Long = this.seatId
+    var take: Boolean = this.take
     var _passthroughFields = this._passthroughFields
     _blob.id match {
       case 1 =>
-        code = readCodeValue(_blob.read)
-      case 2 =>
         memberId = readMemberIdValue(_blob.read)
+      case 2 =>
+        gameId = readGameIdValue(_blob.read)
       case 3 =>
-        reconnect = readReconnectValue(_blob.read)
+        seatId = readSeatIdValue(_blob.read)
+      case 4 =>
+        take = readTakeValue(_blob.read)
       case _ => _passthroughFields += (_blob.id -> _blob)
     }
     new Immutable(
-      code,
       memberId,
-      reconnect,
+      gameId,
+      seatId,
+      take,
       _passthroughFields
     )
   }
@@ -511,24 +587,28 @@ trait CheckGameStatusResponse
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetField(_fieldId: Short): CheckGameStatusResponse = {
-    var code: String = this.code
+  def unsetField(_fieldId: Short): TakeLandlordRequest = {
     var memberId: Long = this.memberId
-    var reconnect: Boolean = this.reconnect
+    var gameId: Long = this.gameId
+    var seatId: Long = this.seatId
+    var take: Boolean = this.take
 
     _fieldId match {
       case 1 =>
-        code = ""
-      case 2 =>
         memberId = 0L
+      case 2 =>
+        gameId = 0L
       case 3 =>
-        reconnect = false
+        seatId = 0L
+      case 4 =>
+        take = false
       case _ =>
     }
     new Immutable(
-      code,
       memberId,
-      reconnect,
+      gameId,
+      seatId,
+      take,
       _passthroughFields - _fieldId
     )
   }
@@ -538,19 +618,22 @@ trait CheckGameStatusResponse
    * known, it is reverted to its default value; if the field is unknown, it is removed
    * from the passthroughFields map, if present.
    */
-  def unsetCode: CheckGameStatusResponse = unsetField(1)
+  def unsetMemberId: TakeLandlordRequest = unsetField(1)
 
-  def unsetMemberId: CheckGameStatusResponse = unsetField(2)
+  def unsetGameId: TakeLandlordRequest = unsetField(2)
 
-  def unsetReconnect: CheckGameStatusResponse = unsetField(3)
+  def unsetSeatId: TakeLandlordRequest = unsetField(3)
+
+  def unsetTake: TakeLandlordRequest = unsetField(4)
 
 
   override def write(_oprot: TProtocol): Unit = {
-    CheckGameStatusResponse.validate(this)
+    TakeLandlordRequest.validate(this)
     _oprot.writeStructBegin(Struct)
-    if (code ne null) writeCodeField(code, _oprot)
     writeMemberIdField(memberId, _oprot)
-    writeReconnectField(reconnect, _oprot)
+    writeGameIdField(gameId, _oprot)
+    writeSeatIdField(seatId, _oprot)
+    writeTakeField(take, _oprot)
     if (_passthroughFields.nonEmpty) {
       _passthroughFields.values.foreach { _.write(_oprot) }
     }
@@ -559,38 +642,41 @@ trait CheckGameStatusResponse
   }
 
   def copy(
-    code: String = this.code,
     memberId: Long = this.memberId,
-    reconnect: Boolean = this.reconnect,
+    gameId: Long = this.gameId,
+    seatId: Long = this.seatId,
+    take: Boolean = this.take,
     _passthroughFields: immutable$Map[Short, TFieldBlob] = this._passthroughFields
-  ): CheckGameStatusResponse =
+  ): TakeLandlordRequest =
     new Immutable(
-      code,
       memberId,
-      reconnect,
+      gameId,
+      seatId,
+      take,
       _passthroughFields
     )
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[CheckGameStatusResponse]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[TakeLandlordRequest]
 
   override def equals(other: Any): Boolean =
     canEqual(other) &&
       _root_.scala.runtime.ScalaRunTime._equals(this, other) &&
-      _passthroughFields == other.asInstanceOf[CheckGameStatusResponse]._passthroughFields
+      _passthroughFields == other.asInstanceOf[TakeLandlordRequest]._passthroughFields
 
   override def hashCode: Int = _root_.scala.runtime.ScalaRunTime._hashCode(this)
 
   override def toString: String = _root_.scala.runtime.ScalaRunTime._toString(this)
 
 
-  override def productArity: Int = 3
+  override def productArity: Int = 4
 
   override def productElement(n: Int): Any = n match {
-    case 0 => this.code
-    case 1 => this.memberId
-    case 2 => this.reconnect
+    case 0 => this.memberId
+    case 1 => this.gameId
+    case 2 => this.seatId
+    case 3 => this.take
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 
-  override def productPrefix: String = "CheckGameStatusResponse"
+  override def productPrefix: String = "TakeLandlordRequest"
 }

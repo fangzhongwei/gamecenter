@@ -10,7 +10,7 @@ import com.jxjxgo.common.mq.service.ConsumerService
 import com.jxjxgo.common.redis.RedisClientTemplate
 import com.jxjxgo.gamecenter.domain.mq.joingame.JoinGameMessage
 import com.jxjxgo.gamecenter.domain.{PlayTable, Room, RoomConfig, Seat}
-import com.jxjxgo.gamecenter.enumnate.{GameStatus, SeatStatus}
+import com.jxjxgo.gamecenter.enumnate.{GameStatus, PlayStatus, SeatStatus}
 import com.jxjxgo.gamecenter.helper.CardsHelper
 import com.jxjxgo.gamecenter.repo._
 import com.jxjxgo.memberber.rpc.domain.{MemberEndpoint, MemberResponse}
@@ -18,15 +18,16 @@ import com.twitter.util.{Await, Future}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Promise
-
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Promise
 
 /**
   * Created by fangzhongwei on 2016/12/19.
   */
 trait CoordinateService extends ConsumerService {
+  def notifySeat(seatId: Long): scala.concurrent.Future[Unit]
 
+  def createGame(traceId: String, seatId1: Long, seatId2: Long, seatId3: Long, memberId1: Long, memberId2: Long, memberId3: Long, gameType: Int, deviceType: Int, baseAmount: Int): Unit
 }
 
 class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, redisClientTemplate: RedisClientTemplate, gameNotifyService: GameNotifyService, memberClientService: MemberEndpoint[Future]) extends CoordinateService {
@@ -50,7 +51,7 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
   }
 
   implicit def convertSeat(r: towVsOneRepository.TmSeatRow): Seat = {
-    Seat(r.id, r.traceId, r.status, r.memberId, r.cards, r.landlordCards, r.fingerPrint, r.gameId, r.gameType, r.deviceType, r.multiples, r.baseAmount, r.previousNickname, r.previousCardsCount, r.nextNickname, r.nextCardsCount, r.choosingLandlord, r.landlord, r.turnToPlay, r.socketId, r.gmtCreate, r.gmtUpdate)
+    Seat(r.id, r.status, r.memberId, r.cards, r.landlordCards, r.proCardsInfo, r.fingerPrint, r.gameId, r.gameType, r.deviceType, r.multiples, r.baseAmount, r.landlordPosition, r.previousNickname, r.previousCardsCount, r.nextNickname, r.nextCardsCount, PlayStatus.get(r.playStatus), r.seqInGame, r.landlord, r.socketId, r.gmtUpdate)
   }
 
   def preparePlay(traceId: String, room: Room, table: PlayTable, m: JoinGameMessage) = {
@@ -75,14 +76,10 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
   implicit def list2String(list: List[Int]): String = list.mkString(",")
 
   def startGame(traceId: String, m: JoinGameMessage, room: Room, table: PlayTable, seats: Seq[towVsOneRepository.TmSeatRow]) = {
+    createGame(traceId, seats(0).id, seats(1).id, seats(2).id, seats(0).memberId, seats(1).memberId, seats(2).memberId, m.gameType, m.deviceType, m.baseAmount)
+  }
 
-    val seat1: Seat = seats(0)
-    val seat2: Seat = seats(1)
-    val seat3: Seat = seats(2)
-
-    val memberId1 = seat1.memberId
-    val memberId2 = seat2.memberId
-    val memberId3 = seat3.memberId
+  def createGame(traceId: String, seatId1: Long, seatId2: Long, seatId3: Long, memberId1: Long, memberId2: Long, memberId3: Long, gameType: Int, deviceType: Int, baseAmount: Int): Unit = {
 
     val (player1CardsList, player2CardsList, player3CardsList, dzCardsList) = CardsHelper.initCards()
     val gameId: Long = towVsOneRepository.getNextGameId()
@@ -92,13 +89,12 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
     val memberResponse2: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId2))
     val memberResponse3: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId3))
 
-    val game: towVsOneRepository.TmGameRow = towVsOneRepository.TmGameRow(gameId, m.gameType, m.deviceType, m.baseAmount, 1, GameStatus.Playing.getCode, memberId1, memberId2, memberId3, player1CardsList, player2CardsList, player3CardsList, dzCardsList, 0, 0, now, now)
-    towVsOneRepository.createGame(game, seat1.id, seat2.id, seat3.id, player1CardsList, player2CardsList, player3CardsList, dzCardsList, memberResponse1.nickName, memberResponse2.nickName, memberResponse3.nickName)
+    val game: towVsOneRepository.TmGameRow = towVsOneRepository.TmGameRow(gameId, gameType, deviceType, baseAmount, 1, GameStatus.WaitingLandlord.getCode, memberId1, memberId2, memberId3, seatId1, seatId2, seatId3, 0, 0L, player1CardsList, player2CardsList, player3CardsList, dzCardsList, 0, 0, now, now)
+    towVsOneRepository.createGame(game, seatId1, seatId2, seatId3, player1CardsList, player2CardsList, player3CardsList, dzCardsList, memberResponse1.nickName, memberResponse2.nickName, memberResponse3.nickName)
 
-    notifySeat(seat1.id)
-    notifySeat(seat2.id)
-    notifySeat(seat3.id)
-
+    notifySeat(seatId1)
+    notifySeat(seatId2)
+    notifySeat(seatId3)
   }
 
   def notifySeat(seatId: Long): scala.concurrent.Future[Unit] = {

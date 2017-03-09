@@ -39,16 +39,16 @@ class GameEndpointImpl @Inject()(gameService: GameService) extends GameEndpoint[
     }
   }
 
-  override def playCards(traceId: String, request: PlayCardsRequest): Future[PlayCardsResponse] = {
+  override def playCards(traceId: String, request: PlayCardsRequest): Future[GameBaseResponse] = {
     try {
       Future.value(gameService.playCards(traceId, request))
     } catch {
       case ex: ServiceException =>
         logger.error(traceId, ex)
-        Future.value(PlayCardsResponse(code = ex.getErrorCode.getCode))
+        Future.value(GameBaseResponse(code = ex.getErrorCode.getCode))
       case ex: Exception =>
         logger.error(traceId, ex)
-        Future.value(PlayCardsResponse(code = ErrorCode.EC_SYSTEM_ERROR.getCode))
+        Future.value(GameBaseResponse(code = ErrorCode.EC_SYSTEM_ERROR.getCode))
     }
   }
 
@@ -81,6 +81,19 @@ class GameEndpointImpl @Inject()(gameService: GameService) extends GameEndpoint[
   override def playerOffline(traceId: String, socketUuid: Long, memberId: Long): Future[GameBaseResponse] = {
     try {
       Future.value(gameService.playerOffline(traceId, socketUuid, memberId))
+    } catch {
+      case ex: ServiceException =>
+        logger.error(traceId, ex)
+        Future.value(GameBaseResponse(code = ex.getErrorCode.getCode))
+      case ex: Exception =>
+        logger.error(traceId, ex)
+        Future.value(GameBaseResponse(code = ErrorCode.EC_SYSTEM_ERROR.getCode))
+    }
+  }
+
+  override def takeLandlord(traceId: String, request: TakeLandlordRequest): Future[GameBaseResponse] = {
+    try {
+      Future.value(gameService.takeLandlord(traceId, request.memberId, request.seatId, request.gameId, request.take))
     } catch {
       case ex: ServiceException =>
         logger.error(traceId, ex)
