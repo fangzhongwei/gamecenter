@@ -3,7 +3,6 @@ package com.jxjxgo.gamecenter.service
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerators.UUIDGenerator
 import com.jxjxgo.common.helper.UUIDHelper
 import com.jxjxgo.common.redis.RedisClientTemplate
 import com.jxjxgo.gamecenter.domain.Seat

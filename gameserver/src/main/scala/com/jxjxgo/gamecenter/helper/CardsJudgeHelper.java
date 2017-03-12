@@ -345,8 +345,8 @@ public class CardsJudgeHelper {
             @Override
             public int compare(Integer point1, Integer point2) {
 
-                int p1 = point1;
-                int p2 = point2;
+                int p1 = point1 % 100;
+                int p2 = point2 % 100;
                 if (p1 > p2) {
                     return 1;
                 }

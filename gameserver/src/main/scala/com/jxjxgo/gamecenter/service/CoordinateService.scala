@@ -89,7 +89,7 @@ class CoordinateServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
     val memberResponse2: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId2))
     val memberResponse3: MemberResponse = Await.result(memberClientService.getMemberById(traceId, memberId3))
 
-    val game: towVsOneRepository.TmGameRow = towVsOneRepository.TmGameRow(gameId, gameType, deviceType, baseAmount, 1, GameStatus.WaitingLandlord.getCode, memberId1, memberId2, memberId3, seatId1, seatId2, seatId3, 0, 0L, player1CardsList, player2CardsList, player3CardsList, dzCardsList, 0, 0, now, now)
+    val game: towVsOneRepository.TmGameRow = towVsOneRepository.TmGameRow(gameId, gameType, deviceType, baseAmount, 1, GameStatus.WaitingLandlord.getCode, memberId1, memberId2, memberId3, seatId1, seatId2, seatId3, 0, memberId1, player1CardsList, player2CardsList, player3CardsList, dzCardsList, 0, 0, now, now)
     towVsOneRepository.createGame(game, seatId1, seatId2, seatId3, player1CardsList, player2CardsList, player3CardsList, dzCardsList, memberResponse1.nickName, memberResponse2.nickName, memberResponse3.nickName)
 
     notifySeat(seatId1)

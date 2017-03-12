@@ -40,9 +40,9 @@ trait TowVsOneRepository extends Tables {
 
     val tran = (for {
       ns <- TmGame += game
-      _ <- TmSeat.filter(_.id === seatId1).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards1, landlordCards, proCards, player3CardsList.size.toShort, nickName3, player2CardsList.size.toShort, nickName2, PlayStatus.DecideToBeLandlord.toString, false, now)
-      _ <- TmSeat.filter(_.id === seatId2).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards2, landlordCards, proCards, player1CardsList.size.toShort, nickName1, player3CardsList.size.toShort, nickName3, PlayStatus.WaitingOtherPlay.toString, false, now)
-      _ <- TmSeat.filter(_.id === seatId3).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards3, landlordCards, proCards, player2CardsList.size.toShort, nickName2, player1CardsList.size.toShort, nickName1, PlayStatus.WaitingOtherPlay.toString, false, now)
+      _ <- TmSeat.filter(_.id === seatId1).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards1, landlordCards, proCards, player3CardsList.size.toShort, nickName3, player2CardsList.size.toShort, nickName2, PlayStatus.DecideToBeLandlord.getCode, false, now)
+      _ <- TmSeat.filter(_.id === seatId2).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards2, landlordCards, proCards, player1CardsList.size.toShort, nickName1, player3CardsList.size.toShort, nickName3, PlayStatus.WaitingOtherPlay.getCode, false, now)
+      _ <- TmSeat.filter(_.id === seatId3).map(s => (s.status, s.gameId, s.multiples, s.cards, s.landlordCards, s.proCardsInfo, s.previousCardsCount, s.previousNickname, s.nextCardsCount, s.nextNickname, s.playStatus, s.landlord, s.gmtUpdate)).update(SeatStatus.Playing.getCode.toShort, game.id, 1, cards3, landlordCards, proCards, player2CardsList.size.toShort, nickName2, player1CardsList.size.toShort, nickName1, PlayStatus.WaitingOtherPlay.getCode, false, now)
     } yield ()).transactionally
     Await.result(db.run(tran), Duration.Inf)
   }
@@ -113,7 +113,7 @@ trait TowVsOneRepository extends Tables {
           conn.rollback()
           return false
       }
-      seatSitDown(conn, seat.id, m, SeatStatus.WaitingStart, seat.status, traceId)
+      seatSitDown(conn, seat.id, m, SeatStatus.WaitingStart, seat.status, m.fingerPrint)
       conn.commit()
       true
     } catch {
@@ -148,19 +148,18 @@ trait TowVsOneRepository extends Tables {
     prepareStatement.executeUpdate()
   }
 
-  private def seatSitDown(conn: Connection, seatId: Long, m: JoinGameMessage, newStatus: SeatStatus, status: Short, traceId: String): Int = {
-    val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, device_type = ?, game_type = ?, base_amount = ?, member_id = ?, trace_id = ?, finger_print = ?, socket_id = ? WHERE id = ? AND status = ?")
+  private def seatSitDown(conn: Connection, seatId: Long, m: JoinGameMessage, newStatus: SeatStatus, status: Short, fingerPrint: String): Int = {
+    val prepareStatement: PreparedStatement = conn.prepareStatement("UPDATE tm_seat SET status = ?, device_type = ?, game_type = ?, base_amount = ?, member_id = ?, finger_print = ?, socket_id = ? WHERE id = ? AND status = ?")
     prepareStatement.setShort(1, newStatus.getCode.toShort)
     prepareStatement.setInt(2, m.deviceType)
     prepareStatement.setInt(3, m.gameType)
     prepareStatement.setInt(4, m.baseAmount)
     prepareStatement.setLong(5, m.memberId)
-    prepareStatement.setString(6, traceId)
-    prepareStatement.setString(7, m.fingerPrint)
-    prepareStatement.setLong(8, m.socketId)
+    prepareStatement.setString(6, fingerPrint)
+    prepareStatement.setLong(7, m.socketId)
 
-    prepareStatement.setLong(9, seatId)
-    prepareStatement.setShort(10, status)
+    prepareStatement.setLong(8, seatId)
+    prepareStatement.setShort(9, status)
     prepareStatement.executeUpdate()
   }
 
