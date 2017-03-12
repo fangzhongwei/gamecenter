@@ -84,7 +84,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
           case false => balance > config.maxDiamondAmount match {
             case true => GameBaseResponse(code = ErrorCode.EC_GAME_DIAMOND_TOO_MUCH.getCode)
             case false =>
-              val game: JoinGameMessage = JoinGameMessage(traceId, request.socketId, request.ip, deviceType, request.fingerPrint, memberId, gameType)
+              val game: JoinGameMessage = JoinGameMessage(traceId, request.socketId, request.ip, deviceType, request.fingerPrint, memberId, gameType, config.baseAmount)
               logger.info(s"send join message:$game")
               producerTemplate.send(config.topic, game.toByteArray)
               GameBaseResponse("0")
@@ -370,38 +370,61 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
       case Some(game) =>
         var proMemberId = 0L
         var nextMemberId = 0L
+
+        var sid = 0L
+        var proSeatId = 0L
+        var nextSeatId = 0L
+
         if (memberId == game.player1Id) {
           proMemberId = game.player3Id
           nextMemberId = game.player2Id
+          sid = game.seat1Id
+          proSeatId = game.seat3Id
+          nextSeatId = game.seat2Id
         } else if (memberId == game.player2Id) {
           proMemberId = game.player1Id
           nextMemberId = game.player3Id
+          sid = game.seat2Id
+          proSeatId = game.seat1Id
+          nextSeatId = game.seat3Id
         } else {
           proMemberId = game.player2Id
           nextMemberId = game.player1Id
+          sid = game.seat3Id
+          proSeatId = game.seat2Id
+          nextSeatId = game.seat1Id
         }
-        game.activePlayerId == memberId && game.status == GameStatus.WaitingLandlord.getCode && game.seqInGame == 0 match {
+
+        sid == seatId match {
           case true =>
-            val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
-            seat.memberId == memberId && seat.seqInGame == 0 && (game.seat1Id == seatId || game.seat2Id == seatId || game.seat3Id == seatId) match {
+            game.activePlayerId == memberId && game.status == GameStatus.WaitingLandlord.getCode && game.seqInGame == 0 match {
               case true =>
-                take match {
+                val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
+                seat.memberId == memberId && seat.seqInGame == 0 && (game.seat1Id == seatId || game.seat2Id == seatId || game.seat3Id == seatId) match {
                   case true =>
-                    towVsOneRepository.takeLandlord(gameId, memberId, proMemberId, nextMemberId)
-                    coordinateService.notifySeat(game.seat1Id)
-                    coordinateService.notifySeat(game.seat2Id)
-                    coordinateService.notifySeat(game.seat3Id)
-                    GameBaseResponse("0")
-                  case false =>
-                    val passCount: Int = towVsOneRepository.gamePassCount(gameId)
-                    passCount >= 2 match {
+                    take match {
                       case true =>
-                        towVsOneRepository.passLandlord3th(gameId, memberId, proMemberId, nextMemberId)
-                        coordinateService.createGame(traceId, game.seat1Id, game.seat2Id, game.seat3Id, game.player1Id, game.player2Id, game.player3Id, game.gameType, game.deviceType, game.baseAmount)
+                        towVsOneRepository.takeLandlord(gameId, memberId, proMemberId, nextMemberId, seatId, proSeatId, nextSeatId)
+                        coordinateService.notifySeat(game.seat1Id)
+                        coordinateService.notifySeat(game.seat2Id)
+                        coordinateService.notifySeat(game.seat3Id)
+                        GameBaseResponse("0")
                       case false =>
-                        towVsOneRepository.passLandlord(gameId, memberId, proMemberId, nextMemberId)
+                        val passCount: Int = towVsOneRepository.gamePassCount(gameId)
+                        passCount >= 2 match {
+                          case true =>
+                            towVsOneRepository.passLandlord3th(gameId, memberId, proMemberId, nextMemberId, seatId, proSeatId, nextSeatId)
+                            coordinateService.createGame(traceId, game.seat1Id, game.seat2Id, game.seat3Id, game.player1Id, game.player2Id, game.player3Id, game.gameType, game.deviceType, game.baseAmount)
+                          case false =>
+                            towVsOneRepository.passLandlord(gameId, memberId, proMemberId, nextMemberId, seatId, proSeatId, nextSeatId)
+                        }
+                        coordinateService.notifySeat(game.seat1Id)
+                        coordinateService.notifySeat(game.seat2Id)
+                        coordinateService.notifySeat(game.seat3Id)
+                        GameBaseResponse("0")
                     }
-                    GameBaseResponse("0")
+                  case false =>
+                    throw ServiceException.make(ErrorCode.EC_GAME_INVALID_REQUEST_DATA)
                 }
               case false =>
                 throw ServiceException.make(ErrorCode.EC_GAME_INVALID_REQUEST_DATA)

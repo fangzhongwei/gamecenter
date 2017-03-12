@@ -14,19 +14,16 @@ object CardsHelper {
     val list2: List[Int] = shuffledCards.slice(17, 34)
     val list3: List[Int] = shuffledCards.slice(34, 51)
     val landlordList: List[Int] = shuffledCards.slice(51, 54)
-
-    list1.sortWith(sortFunc)
-
-    (list1, list2, list3, landlordList)
+    (list1.sortWith(sortFunc), list2.sortWith(sortFunc), list3.sortWith(sortFunc), landlordList.sortWith(sortFunc))
   }
 
   def sortFunc(point1:Int, point2:Int):Boolean = {
     val p1: Int = point1 % 100
     val p2: Int = point2 % 100
-    if (p1 > p2) return true
-    if (p1 < p2) return false
-    if (point1 > point2) return true
-    if (point1 < point2) return false
+    if (p1 > p2) return false
+    if (p1 < p2) return true
+    if (point1 > point2) return false
+    if (point1 < point2) return true
     return false
   }
 }

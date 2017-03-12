@@ -268,37 +268,37 @@ trait TowVsOneRepository extends Tables {
     }
   }
 
-  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long): Unit = {
+  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long , seatId: Long, proSeatId: Long, nextSeatId: Long): Unit = {
     val now: Timestamp = new Timestamp(System.currentTimeMillis())
     val a = (for {
       ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.Playing.getCode, memberId, memberId, 1, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == memberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.TurnToPlay.getCode, 1, true, 'S', now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == proMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'N', now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == nextMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'P', now)
+      _ <- TmSeat.filter(t => t.id === seatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.TurnToPlay.getCode, 1, true, 'S', now)
+      _ <- TmSeat.filter(t => t.id === proSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'N', now)
+      _ <- TmSeat.filter(t => t.id === nextSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'P', now)
       _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideYes.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
     } yield ()).transactionally
     Await.result(db.run(a), Duration.Inf)
   }
 
-  def passLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long): Unit = {
+  def passLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long, seatId: Long, proSeatId: Long, nextSeatId: Long): Unit = {
     val now: Timestamp = new Timestamp(System.currentTimeMillis())
     val a = (for {
-      ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.Playing.getCode, 0, nextMemberId, 1, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == memberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == proMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == nextMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.DecideToBeLandlord.getCode, 0, false, now)
+      ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.WaitingLandlord.getCode, 0, nextMemberId, 0, now)
+      _ <- TmSeat.filter(t => t.id === seatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.id === proSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.id === nextSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.DecideToBeLandlord.getCode, 0, false, now)
       _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideNo.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
     } yield ()).transactionally
     Await.result(db.run(a), Duration.Inf)
   }
 
-  def passLandlord3th(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long): Unit = {
+  def passLandlord3th(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long, seatId: Long, proSeatId: Long, nextSeatId: Long): Unit = {
     val now: Timestamp = new Timestamp(System.currentTimeMillis())
     val a = (for {
       ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.activePlayerId, g.winnerId, g.gmtUpdate)).update(GameStatus.Aborted.getCode, 0, 0, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == memberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == proMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
-      _ <- TmSeat.filter(t => t.gameId === gameId && t.memberId == nextMemberId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.id === seatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.id === proSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
+      _ <- TmSeat.filter(t => t.id === nextSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.gmtUpdate)).update(PlayStatus.WaitingStart.getCode, 0, false, now)
       _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideNo.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
     } yield ()).transactionally
     Await.result(db.run(a), Duration.Inf)
