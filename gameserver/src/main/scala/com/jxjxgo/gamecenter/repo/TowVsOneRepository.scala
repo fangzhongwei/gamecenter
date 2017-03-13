@@ -345,7 +345,7 @@ trait TowVsOneRepository extends Tables {
           }
         }, now)
       _ <- TmSeat.filter(_.id === seatId).map(s => (s.cards, s.multiples, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCards, multiples, PlayStatus.WaitingOtherPlay.getCode, 0, now)
-      _ <- TmSeat.filter(_.id === proSeatId).map(s => (s.nextCardsCount, s.multiples, s.gmtUpdate)).update(leftCount.toShort, multiples, now)
+      _ <- TmSeat.filter(_.id === proSeatId).map(s => (s.nextCardsCount, s.multiples, s.proCardsInfo, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, now)
       _ <- TmSeat.filter(_.id === nextSeatId).map(s => (s.previousCardsCount, s.multiples, s.proCardsInfo, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, PlayStatus.TurnToPlay.getCode, activeSeqInGame.toShort, now)
       _ <- TmPlayRecord += playRecordRow
     } yield ()).transactionally

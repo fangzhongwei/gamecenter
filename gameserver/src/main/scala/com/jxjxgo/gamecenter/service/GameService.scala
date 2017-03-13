@@ -147,7 +147,14 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
                               case true =>
                                 val proRecord: towVsOneRepository.TmPlayRecordRow = towVsOneRepository.loadPlayRecord(gameId, (seqInGame - 1).toShort)
                                 val proCardsType: CardsType = CardsType.valueOf(proRecord.cardsType)
-                                val twp2Beat: TypeWithPoints = parseTypeWithPoints(convertList(proRecord.keysForNext.split(",").map(_.toInt)), CardsType.valueOf(proRecord.cardsTypeForNext))
+                                var twp2Beat: TypeWithPoints = null
+                                proRecord.cardsTypeForNext.equals("Exist") match {
+                                  case true =>
+                                    twp2Beat = new TypeWithPoints(CardsType.Exist)
+                                  case false =>
+                                    twp2Beat = parseTypeWithPoints(convertList(proRecord.keysForNext.split(",").map(_.toInt)), CardsType.valueOf(proRecord.cardsTypeForNext))
+                                }
+
                                 CardsJudgeHelper.GetInstance().canPlay(twp2Beat, typeWithPoints) match {
                                   case true =>
                                     recordPlay(traceId, request, game, twp2Beat, typeWithPoints, proCardsType, proRecord.playPoints)
@@ -189,7 +196,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
       case true =>
         cardsTypeForNext = Exist
         keysForNext = "-"
-        showCardsForNext = proPlayPoints
+        showCardsForNext = "-"
       case false =>
         beatType.getCardsType match {
           case Exist =>
@@ -244,14 +251,11 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
       case false =>
     }
 
-
     //    string cardsTypeCode2Beat;
     //    string cardsKeys2Beat;
     //    string cards4Show;
     //    string proPlayerAction;
 //    val proCards: String = new StringBuilder("Exist:-:").append(landlordCards).append(":None").toString();
-
-    //Doub:3:103,203103,203:Play
 
     val cardsInfo4Next = new StringBuilder(cardsTypeForNext.toString).append(':').append(keysForNext).append(':').append(showCardsForNext).append(':').append({
       r.cardsType match {
@@ -293,7 +297,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
           amount3 = baseAmount * multiples * 2
         }
         accountEndpoint.settle(traceId, SettleRequest(gameId, deviceType, memberId1, amount1, memberId2, amount2, memberId3, amount3))
-        towVsOneRepository.setGameStatus(gameId, GameStatus.Finished)
+        towVsOneRepository.setGameStatus(gameId, GameStatus.Settled)
       case _ =>
     }
     GameBaseResponse("0")
@@ -309,7 +313,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
   }
 
   def join(list: Seq[Int]): String = {
-    if (list == null || list.size == 0) return ""
+    if (list == null || list.size == 0) return "-"
     val j: StringBuilder = new StringBuilder
     for (i <- list) {
       j.append(i).append(',')
