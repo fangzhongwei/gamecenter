@@ -266,10 +266,6 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
 
     towVsOneRepository.playCards(game, playRecordRow, updateIndex, seatId, proSeatId, nextSeatId, leftCount, leftCards, multiples, nextActivePlayerId, r.memberId, cardsInfo4Next)
 
-    coordinateService.notifySeat(game.seat1Id)
-    coordinateService.notifySeat(game.seat2Id)
-    coordinateService.notifySeat(game.seat3Id)
-
     leftCount match {
       case 0 =>
         val gameId: Long = game.id
@@ -300,6 +296,11 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
         towVsOneRepository.setGameStatus(gameId, GameStatus.Settled)
       case _ =>
     }
+
+    coordinateService.notifySeat(game.seat1Id)
+    coordinateService.notifySeat(game.seat2Id)
+    coordinateService.notifySeat(game.seat3Id)
+
     GameBaseResponse("0")
   }
 

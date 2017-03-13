@@ -337,16 +337,29 @@ trait TowVsOneRepository extends Tables {
           case 2 => g.player2Cards
           case _ => g.player3Cards
         }
-      }, g.activePlayerId, g.seqInGame, g.multiples, g.winnerId, g.gmtUpdate))
-        .update(leftCards, nextActivePlayerId, activeSeqInGame, multiples, {
+      }, g.activePlayerId, g.seqInGame, g.multiples, g.winnerId, g.status, g.gmtUpdate))
+        .update(leftCards, nextActivePlayerId, activeSeqInGame, multiples,
           leftCount match {
             case 0 => playerId
             case _ => 0L
-          }
-        }, now)
-      _ <- TmSeat.filter(_.id === seatId).map(s => (s.cards, s.multiples, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCards, multiples, PlayStatus.WaitingOtherPlay.getCode, 0, now)
-      _ <- TmSeat.filter(_.id === proSeatId).map(s => (s.nextCardsCount, s.multiples, s.proCardsInfo, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, now)
-      _ <- TmSeat.filter(_.id === nextSeatId).map(s => (s.previousCardsCount, s.multiples, s.proCardsInfo, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, PlayStatus.TurnToPlay.getCode, activeSeqInGame.toShort, now)
+          },
+          leftCount match {
+            case 0 => GameStatus.Finished.getCode
+            case _ => GameStatus.Playing.getCode
+          },
+          now)
+      _ <- TmSeat.filter(_.id === seatId).map(s => (s.cards, s.multiples, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCards, multiples, leftCount match {
+        case 0 => PlayStatus.End.getCode
+        case _ => PlayStatus.WaitingOtherPlay.getCode
+      }, 0, now)
+      _ <- TmSeat.filter(_.id === proSeatId).map(s => (s.nextCardsCount, s.multiples, s.proCardsInfo, s.playStatus, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, leftCount match {
+        case 0 => PlayStatus.End.getCode
+        case _ => PlayStatus.WaitingOtherPlay.getCode
+      }, now)
+      _ <- TmSeat.filter(_.id === nextSeatId).map(s => (s.previousCardsCount, s.multiples, s.proCardsInfo, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, leftCount match {
+        case 0 => PlayStatus.End.getCode
+        case _ => PlayStatus.TurnToPlay.getCode
+      }, activeSeqInGame.toShort, now)
       _ <- TmPlayRecord += playRecordRow
     } yield ()).transactionally
     Await.result(db.run(tran), Duration.Inf)
