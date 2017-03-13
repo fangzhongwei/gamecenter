@@ -43,10 +43,10 @@ public class CardsJudgeHelper {
         Collections.sort(points, new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                if (o1.intValue() > o2) {
+                if (o1.intValue() > o2.intValue()) {
                     return 1;
-                } else if (o1.intValue() > o2) {
-                    return 1;
+                } else if (o1.intValue() < o2.intValue()) {
+                    return -1;
                 }
                 return 0;
             }
@@ -384,6 +384,11 @@ public class CardsJudgeHelper {
         if (originalType == CardsType.Invalid || originalType == CardsType.Pass || readyType == CardsType.Invalid || readyType == CardsType.Exist)
         {
             throw ServiceException.make(ErrorCode.EC_GAME_INVALID_REQUEST_DATA);
+        }
+
+        if (originalType != CardsType.Exist && readyType == CardsType.Pass)
+        {
+            return true;
         }
 
         switch (originalType) {

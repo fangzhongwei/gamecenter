@@ -101,7 +101,11 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
     val list: util.List[Integer] = new util.ArrayList[Integer]()
     request.playPoints.foreach(p => list.add(Integer.valueOf(p)))
 
-    val typeWithPoints: TypeWithPoints = CardsJudgeHelper.GetInstance().judgeType(list)
+    var typeWithPoints: TypeWithPoints = null
+    request.cardsType.equals("Pass") match {
+      case true => typeWithPoints = new TypeWithPoints(CardsType.Pass)
+      case false => typeWithPoints = CardsJudgeHelper.GetInstance().judgeType(list)
+    }
 
     typeWithPoints.getCardsType match {
       case Invalid =>
@@ -128,27 +132,17 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
                 val gameId: Long = request.gameId
                 towVsOneRepository.loadGame(gameId) match {
                   case Some(game) =>
-                    var playerCards = ""
                     val memberId = request.memberId
-                    if (memberId == game.player1Id) {
-                      playerCards = game.player1Cards
-                    } else if (memberId == game.player2Id) {
-                      playerCards = game.player2Cards
-                    } else if (memberId == game.player3Id) {
-                      playerCards = game.player3Cards
-                    }
+                    val seatId: Long = request.seatId
+                    val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
+                    val playerCards = seat.cards
                     game.activePlayerId != request.memberId || game.status != GameStatus.Playing.getCode || game.seqInGame != seqInGame || !join(request.handPoints).equals(playerCards) || !listContains(request.handPoints, request.playPoints) match {
                       case true =>
                         logger.error(s"validate fail, request:$request.")
                         GameBaseResponse(ErrorCode.EC_GAME_INVALID_REQUEST_DATA.getCode)
                       case false =>
-
-                        val seatId: Long = request.seatId
-                        val seat: towVsOneRepository.TmSeatRow = towVsOneRepository.getSeat(seatId)
-
-                        seat.memberId == memberId && seat.seqInGame == 0 && (game.seat1Id == seatId || game.seat2Id == seatId || game.seat3Id == seatId) match {
+                        seat.memberId == memberId && seat.seqInGame == seqInGame && (game.seat1Id == seatId || game.seat2Id == seatId || game.seat3Id == seatId) match {
                           case true =>
-                            var playVaild = true
                             (seqInGame > 1) match {
                               case true =>
                                 val proRecord: towVsOneRepository.TmPlayRecordRow = towVsOneRepository.loadPlayRecord(gameId, (seqInGame - 1).toShort)
@@ -257,12 +251,9 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
     //    string proPlayerAction;
 //    val proCards: String = new StringBuilder("Exist:-:").append(landlordCards).append(":None").toString();
 
-    val cardsInfo4Next = new StringBuilder(cardsTypeForNext.toString).append(':').append(keysForNext).append(':').append(showCardsForNext).append({
-      r.cardsType match {
-        case "Pass" => "-"
-        case _ => join(r.playPoints)
-      }
-    }).append(':').append({
+    //Doub:3:103,203103,203:Play
+
+    val cardsInfo4Next = new StringBuilder(cardsTypeForNext.toString).append(':').append(keysForNext).append(':').append(showCardsForNext).append(':').append({
       r.cardsType match {
         case "Pass" => "Pass"
         case _ => "Play"

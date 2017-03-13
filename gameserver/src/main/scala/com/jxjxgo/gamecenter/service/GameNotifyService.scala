@@ -56,10 +56,9 @@ class GameNotifyServiceImpl @Inject()(towVsOneRepository: TowVsOneRepository, re
     //    17: string fingerPrint = "",
     //    18: long memberId = 0,
     //    19: long seatId = 0,
+    //    20: int seqInGame = 0,
 
-
-
-    gameGatewayEndpoint.push(UUIDHelper.generate(), SocketResponse("0", "seatWatch", s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.proCardsInfo, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.playStatus.getCode, s.landlord, s.fingerPrint, s.memberId, s.id.toString, "", "", ""))
+    gameGatewayEndpoint.push(UUIDHelper.generate(), SocketResponse("0", "seatWatch", s.gameId, s.gameType, s.deviceType, s.cards, s.landlordCards, s.proCardsInfo, s.baseAmount, s.multiples, s.previousNickname, s.previousCardsCount, s.nextNickname, s.nextCardsCount, s.playStatus.getCode, s.landlord, s.fingerPrint, s.memberId, s.id.toString, s.seqInGame.toString, "", ""))
   }
 
   def thriftClient(rpcHost: String): GameGatewayEndpoint[Future] = {

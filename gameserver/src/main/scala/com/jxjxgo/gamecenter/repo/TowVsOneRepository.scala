@@ -268,7 +268,7 @@ trait TowVsOneRepository extends Tables {
     }
   }
 
-  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long , seatId: Long, proSeatId: Long, nextSeatId: Long, newCards: String, newProCards: String): Unit = {
+  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long, seatId: Long, proSeatId: Long, nextSeatId: Long, newCards: String, newProCards: String): Unit = {
     val now: Timestamp = new Timestamp(System.currentTimeMillis())
     val a = (for {
       ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.Playing.getCode, memberId, memberId, 1, now)
@@ -315,7 +315,7 @@ trait TowVsOneRepository extends Tables {
 
   def loadPlayRecord(gameId: Long, seqInGame: Short): TmPlayRecordRow = {
     Await.result(db.run(TmPlayRecord.filter {
-      r => (r.gameId === gameId && r.seqInGame == seqInGame)
+      r => (r.gameId === gameId && r.seqInGame === seqInGame)
     }.result.head), Duration.Inf)
   }
 
@@ -346,7 +346,8 @@ trait TowVsOneRepository extends Tables {
         }, now)
       _ <- TmSeat.filter(_.id === seatId).map(s => (s.cards, s.multiples, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCards, multiples, PlayStatus.WaitingOtherPlay.getCode, 0, now)
       _ <- TmSeat.filter(_.id === proSeatId).map(s => (s.nextCardsCount, s.multiples, s.gmtUpdate)).update(leftCount.toShort, multiples, now)
-      _ <- TmSeat.filter(_.id === nextSeatId).map(s => (s.previousCardsCount, s.multiples, s.proCardsInfo, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, now)
+      _ <- TmSeat.filter(_.id === nextSeatId).map(s => (s.previousCardsCount, s.multiples, s.proCardsInfo, s.playStatus, s.seqInGame, s.gmtUpdate)).update(leftCount.toShort, multiples, cardsInfo4Next, PlayStatus.TurnToPlay.getCode, activeSeqInGame.toShort, now)
+      _ <- TmPlayRecord += playRecordRow
     } yield ()).transactionally
     Await.result(db.run(tran), Duration.Inf)
   }
