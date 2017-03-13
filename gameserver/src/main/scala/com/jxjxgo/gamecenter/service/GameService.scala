@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import java.util
 import javax.inject.Inject
 
-import com.jxjxgo.account.rpc.domain.{AccountEndpoint, DiamondAccountResponse, SettleRequest}
+import com.jxjxgo.account.rpc.domain.{AccountBaseResponse, AccountEndpoint, DiamondAccountResponse, SettleRequest}
 import com.jxjxgo.common.exception.{ErrorCode, ServiceException}
 import com.jxjxgo.common.kafka.template.ProducerTemplate
 import com.jxjxgo.gamecenter.domain.Game
@@ -187,7 +187,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
     }
   }
 
-  def recordPlay(traceId: String, r: PlayCardsRequest, game: Game, beatType: TypeWithPoints, twp: TypeWithPoints, proProCardsType: CardsType, proPlayPoints:String): GameBaseResponse = {
+  def recordPlay(traceId: String, r: PlayCardsRequest, game: Game, beatType: TypeWithPoints, twp: TypeWithPoints, proProCardsType: CardsType, proPlayPoints: String): GameBaseResponse = {
     var cardsTypeForNext: CardsType = null
     var keysForNext: String = null
     var showCardsForNext: String = null
@@ -255,7 +255,7 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
     //    string cardsKeys2Beat;
     //    string cards4Show;
     //    string proPlayerAction;
-//    val proCards: String = new StringBuilder("Exist:-:").append(landlordCards).append(":None").toString();
+    //    val proCards: String = new StringBuilder("Exist:-:").append(landlordCards).append(":None").toString();
 
     val cardsInfo4Next = new StringBuilder(cardsTypeForNext.toString).append(':').append(keysForNext).append(':').append(showCardsForNext).append(':').append({
       r.cardsType match {
@@ -292,8 +292,13 @@ class GameServiceImpl @Inject()(ssoClientService: SSOServiceEndpoint[Future], ac
           amount2 = -baseAmount * multiples
           amount3 = baseAmount * multiples * 2
         }
-        accountEndpoint.settle(traceId, SettleRequest(gameId, deviceType, memberId1, amount1, memberId2, amount2, memberId3, amount3))
-        towVsOneRepository.setGameStatus(gameId, GameStatus.Settled)
+        val baseResponse: AccountBaseResponse = Await.result(accountEndpoint.settle(traceId, SettleRequest(gameId, deviceType, memberId1, amount1, memberId2, amount2, memberId3, amount3)))
+        baseResponse.code match {
+          case "0" =>
+            towVsOneRepository.setGameStatus(gameId, GameStatus.Settled)
+          case _ =>
+            logger.error(s"settle error:$baseResponse")
+        }
       case _ =>
     }
 

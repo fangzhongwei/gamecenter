@@ -365,9 +365,11 @@ trait TowVsOneRepository extends Tables {
     Await.result(db.run(tran), Duration.Inf)
   }
 
-  def setGameStatus(gameId: Long, gameStatus: GameStatus) = db.run {
-    TmGame.filter(_.id === gameId).map(g => (g.status, g.gmtUpdate)).update(gameStatus.getCode, new Timestamp(System.currentTimeMillis()))
-  }
+  def setGameStatus(gameId: Long, gameStatus: GameStatus) =
+    Await.result(db.run(db.run {
+      TmGame.filter(_.id === gameId).map(g => (g.status, g.gmtUpdate)).update(gameStatus.getCode, new Timestamp(System.currentTimeMillis()))
+    }), Duration.Inf)
+
 }
 
 class TowVsOneRepositoryImpl extends TowVsOneRepository with DBComponent
