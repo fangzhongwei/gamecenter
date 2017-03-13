@@ -268,13 +268,13 @@ trait TowVsOneRepository extends Tables {
     }
   }
 
-  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long , seatId: Long, proSeatId: Long, nextSeatId: Long): Unit = {
+  def takeLandlord(gameId: Long, memberId: Long, proMemberId: Long, nextMemberId: Long , seatId: Long, proSeatId: Long, nextSeatId: Long, newCards: String, newProCards: String): Unit = {
     val now: Timestamp = new Timestamp(System.currentTimeMillis())
     val a = (for {
       ns <- TmGame.filter(_.id === gameId).map(g => (g.status, g.landlordId, g.activePlayerId, g.seqInGame, g.gmtUpdate)).update(GameStatus.Playing.getCode, memberId, memberId, 1, now)
-      _ <- TmSeat.filter(t => t.id === seatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.TurnToPlay.getCode, 1, true, 'S', now)
-      _ <- TmSeat.filter(t => t.id === proSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'N', now)
-      _ <- TmSeat.filter(t => t.id === nextSeatId).map(s => (s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(PlayStatus.WaitingOtherPlay.getCode, 0, false, 'P', now)
+      _ <- TmSeat.filter(t => t.id === seatId).map(s => (s.cards, s.proCardsInfo, s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(newCards, newProCards, PlayStatus.TurnToPlay.getCode, 1, true, 'S', now)
+      _ <- TmSeat.filter(t => t.id === proSeatId).map(s => (s.proCardsInfo, s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(newProCards, PlayStatus.WaitingOtherPlay.getCode, 0, false, 'N', now)
+      _ <- TmSeat.filter(t => t.id === nextSeatId).map(s => (s.proCardsInfo, s.playStatus, s.seqInGame, s.landlord, s.landlordPosition, s.gmtUpdate)).update(newProCards, PlayStatus.WaitingOtherPlay.getCode, 0, false, 'P', now)
       _ <- TmPlayRecord += TmPlayRecordRow(0, PlayType.DecideYes.getCode, gameId, memberId, 0, "", "", "", "", "", "", now)
     } yield ()).transactionally
     Await.result(db.run(a), Duration.Inf)
