@@ -366,9 +366,9 @@ trait TowVsOneRepository extends Tables {
   }
 
   def setGameStatus(gameId: Long, gameStatus: GameStatus) =
-    Await.result(db.run(db.run {
+    Await.result(db.run {
       TmGame.filter(_.id === gameId).map(g => (g.status, g.gmtUpdate)).update(gameStatus.getCode, new Timestamp(System.currentTimeMillis()))
-    }), Duration.Inf)
+    }, Duration.Inf)
 
 }
 
